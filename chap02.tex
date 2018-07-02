@@ -1,0 +1,22 @@
+\chapter{Literature Review}
+
+Recent attempts to incorporate linguistic information to NMT can be roughly classified into two main categories: enriching the encoder and multi-task learning.
+
+\section{Enriching Encoder}
+In this direction, \cite{DBLP:conf/acl/EriguchiHT16} combined sequence-based encoder with a tree-based encoder, which is a modified version of Tree-LSMT \citep{DBLP:conf/acl/TaiSM15}. In contrary, \cite{DBLP:journals/corr/abs-1711-04231} kept the sequence-based LSTM intact, yet replaced the global attention \citep{DBLP:conf/emnlp/LuongPM15} with the syntax-directed attention. The proposed attention is analogous to Luong's local attention with source-word distance being computed via distance between nodes in the dependency tree of the source sentence.
+
+In a simpler way, \cite{DBLP:conf/acl/LiXTZZZ17} proposed to incorporate a sequence of structural label (POS tags) to the encoder's attention by feeding these tags to an RNN.
+
+Not only focusing on enhancing encoder, \cite{DBLP:conf/naacl/CohnHVYDH16} paid more attention to the higher layer of the network by introducing structural bias to the encoder-decoder attention function.
+
+\section{Multi-tasking}
+By jointly train the model to parse and translate simultaneously, it is expected that one task can be improved using the knowledge induced from the other task. \citet{DBLP:conf/acl/EriguchiTC17} combined the translation and dependency parsing tasks by sharing the translation encoder hidden states with the buffer hidden states in shift-reduce parsing model \cite{DBLP:conf/naacl/DyerKBS16}.
+
+While aiming at the same goal, \citet{DBLP:conf/acl/AharoniG17a} proposed a very simple method. Instead of modifying the model structure, they represented the target sentence as a linearized, lexicalized constituency tree. Subsequently, a sequence-to-sequence (seq2seq) model \cite{DBLP:conf/nips/SutskeverVL14} was used to translate the source sentence to this linearized tree, i.e. indeed performing the two tasks. \citet{DBLP:conf/ijcnlp/LeMYM17} made use of the same trick, however, on the dependency tree, proposing a tree-traversal algorithm to linearize the dependency tree. Unfortunately, their algorithm was not able to traverse a non-projective tree.
+
+The evidence presented in these researches  suggests that there is improvement on the BLEU score \cite{BLEU}, yet no report on the parsing performance. To further examine the role of syntactic information in NMT, \citet{DBLP:conf/emnlp/ShiPK16} have done an in-depth analysis on which type of syntactic relations help by showing which labels were better predicted in a joint model.
+
+Thus far, previous studies have examined mostly the seq2seq model with recurrent neural network (RNN) as the backbone, which is hard to control and analyze. Therefore, they relied on a neural network serves to do the syntax prediction that takes the encoder output as its input. This approach could not be sure if the translation's encoder is able to capture syntactic information or lower-level representation. In summary, little is known about the fact that if NMT already capture syntactic information within the model itself, which we attempt to find an answer with our proposal in the following section.
+
+\section{The Transformer Model}
+

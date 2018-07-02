@@ -1,0 +1,66 @@
+\chapter{Data and Experiment Setups}
+
+\section{Data}
+Experiments in this paper are based on two language pairs: German-to-Czech (de2cs)
+translation trained on Europarl \parcite{europarl} and OpenSubtitles2016
+\parcite{OPUS}, after some cleanup preprocessing, character normalization
+and tokenization. These are the only publicly
+available parallel data for this language pair.
+Czech-to-English (cs2en) translation was
+trained on a subset of CzEng 1.7
+\parcite{czeng16:2016}.\footnote{\url{http://ufal.mff.cuni.cz/czeng}}
+The data sizes used for MT training are summarized in \cref{tab:data}.
+For training on parsing tasks we used the same datasets automatically
+annotated on source sides. For German source we used UDPipe \parcite{udpipe},
+with model trained on Universal Dependencies 2.0 (UD, \inparcite{UD20}).
+For Czech
+source we used annotation provided in CzEng release, originally created 
+by Treex \parcite{tectomt:popel:2010}. This annotation is based on Prague Dependency Treebank
+(PDT, \inparcite{pdt20:2006}). For parsing evaluation we used gold test set from UD
+and PDT, respectively.
+
+For Czech-English experiment, we use CzEng 1.7 \citep{czeng16:2016}.
+
+For low-resource language pair, UD pipe with pretrained Parsito model \citep{DBLP:conf/conll/StrakaS17} is used to parse the Estonian-English pair from WMT18 New Translation Task\footnote{http://www.statmt.org/wmt18/}.
+
+\begin{table}
+\begin{center}
+\small
+\begin{tabular}{lrr}
+\textbf{Dataset}	& \textbf{de2cs} & \textbf{cs2en} \\
+\hline
+Train sent. pairs     		& 8.8M      	& 5.2M \\
+Train tokens (src/tgt)		& 89M/78M  		& 61M/69M \\
+Dev. sent. pairs         	& news 2011: 3k & 1k \\ % test and dev in export format are not available
+Test sent. pairs          	& news 2013: 3k & 10k \\
+%Source POS tags          	& TreeTagger \parcite{treetagger} & Treex \parcite{tectomt:popel:2010} \\
+Dep. parser				  	& UD 2.0 & Treex \\
+Gold dep. treebank     & de UD test & PDT test  \\
+\end{tabular}
+\end{center}
+\caption{Data used in our experiments.}
+\label{tab:data}
+\end{table}
+
+\section{Experiment Setups}
+
+All experiments will use Tensor2Tensor\footnote{https://github.com/tensorflow/tensor2tensor} for model training and visualization.
+
+The seq2seq with Bahdanau attention is chosen to be the baseline for the translation task. While in multi-task learning, each individual model is to be used as baseline for that task.
+
+Experiments in this section were carried out with T2T version 1.5.6 at the
+\emph{word level}, i.e. without using subword units. We decided for this
+simplification for an easier alignment between the translation and parsing
+tasks.
+
+\section{Model Architectures}
+
+The Transformer hyper-parameter set transformer\_base \cite{TrainingTipsfortheTransformerModel} was used for all model variants with hidden size 512, filter size 2048, 8 self-attention heads and 6 layers in each of the encoder and decoder.
+
+We also examined different joint model setups by leveraging the encoder's self-attention weight from various layers (layer 0 to layer 5).
+
+For the preprocessing, the only step needed to be done was to insert a dummy `ROOT' word in the beginning of every sentence, so that the selected self-attention matrix would be able to represent a dependency tree correctly.
+
+\section{Evaluation}
+
+We used BLEU score to automatically evaluate translation task's performance, while unlabeled attachment score is employed for dependency parsing task.

@@ -1,0 +1,143 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage[normalem]{ulem}
+
+\title{Exploiting Sentence Structure\\in Neural Machine Translation}
+\author{Thuong-Hai Pham}
+\date{April 2018}
+
+\def\XXX#1{\textcolor{red}{XXX: #1}}
+\def\repl#1#2{\textcolor{red}{\sout{#1}}\textcolor{blue}{\uline{#2}}}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+
+\begin{document}
+
+\maketitle
+
+Neural machine translation (NMT) has become the new state of the art. Similarly to the previous best-performing approach of phrase-based MT, NMT is linguistically uninformed. Depending on the model, it treats the input sentence more or less as a bag of words or it traverses the sentence linearly left-to-right and right-to-left.
+
+The goal of the thesis is to experiment with enriching the input representation with linguistically adequate information about the sentence structure. Specifically, the thesis will provide the either the Bahdanau or the Transformer model with the dependency tree of the source sentence, e.g. by encoding the position of the current word in the dependency tree into the source word representation, or by training the model in a multi-task fashion, e.g. trying to learn to translate and parse the source at the same time. As a possible extension, the work may evaluate the opposite effect: the performance in the secondary task, e.g. how does the dependency parsing improve thanks to the multi-tasking with machine translation.
+
+The experiments will be evaluated primarily by automatic measures. A complementary small manual evaluation for the most promising configurations is also expected. The underlying language pair can be freely chosen; Czech-to-English is the primary suggestion.
+
+\section{Introduction}
+Neural Machine Translation (NMT) has been lately established state of the art in machine translation (MT). To achieve this result, most NMT models highly rely on the attention mechanism \citep{bahdanau:etal:attention:iclr:2015}. It was claimed that this attention mechanism can capture some linguistic structures and phenomena \citep{DBLP:conf/nips/VaswaniSPUJGKP17}. Although \cite{DBLP:conf/acl/BelinkovDDSG17} and \cite{DBLP:conf/emnlp/ShiPK16} had analyzed the amount of linguistic information, POS tags and syntax, respectively, NMT systems could capture, their analyses only applied to systems without attention mechanism. More notably, \cite{DBLP:conf/ijcnlp/GhaderM17} had examined the similarities and differences between attention and alignment matrix. However, their goal was merely to inspect the alignment, not linguistic knowledge in source sentence nor target sentences. Therefore, this thesis is aimed to examine the relevance between linguistic structures, e.g. dependency syntax \citep{melvcuk1988dependency}, and the attention mechanism (within sentence/self-attention) in NMT, by focusing on two basic questions:
+\begin{itemize}
+    \item If the attention mechanism is able to capture linguistic structure, can we use the information learned from translation task to other tasks (parsing, tagging, etc.) by transfer learning or multi-task learning?
+    \item If not, does explicitly feeding linguistic information to an NMT system help?
+\end{itemize}
+
+\section{Related works}
+
+Recent attempts to incorporate linguistic information to NMT can be roughly classified into two main categories: enhancing the encoder and multi-task learning.
+
+\subsection{Enhanced encoder}
+In this direction, \cite{DBLP:conf/acl/EriguchiHT16} combined sequence-based encoder with a tree-based encoder, which is a modified version of Tree-LSMT \citep{DBLP:conf/acl/TaiSM15}. In contrary, \cite{DBLP:journals/corr/abs-1711-04231} kept the sequence-based LSTM intact, yet replaced the global attention \citep{DBLP:conf/emnlp/LuongPM15} with the syntax-directed attention. The proposed attention is analogous to Luong's local attention with source-word distance being computed via distance between nodes in the dependency tree of the source sentence.
+
+In a simpler way, \cite{DBLP:conf/acl/LiXTZZZ17} proposed to incorporate a sequence of structural label (POS tags) to the encoder's attention by feeding these tags to an RNN.
+
+Not only focusing on enhancing encoder, \cite{DBLP:conf/naacl/CohnHVYDH16} paid more attention to the higher layer of the network by introducing structural bias to the encoder-decoder attention function.
+
+\subsection{Multi-task learning}
+On the other hand, by jointly train the model to parse and translate simultaneously, it is expected that one task can be improved using the knowledge induced from the other task. \cite{DBLP:conf/acl/EriguchiTC17} combined the translation and dependency parsing tasks by sharing the translation encoder hidden states with the buffer hidden states in shift-reduce parsing model\citep{DBLP:conf/naacl/DyerKBS16}. Furthermore, the translation output also acted as the generator for the parsing model. Hence, the connection between the output of one task and the input of the other task allowed the joint model learn to both translate and parse the target sentence. However, this multi-task paradigm showed very limited cooperation between the sub-models. Hence, one hardly concluded the benefit one task could bring to the other.
+
+While aiming at the same goal, \cite{DBLP:conf/acl/AharoniG17a} proposed a very simple method. Instead of modifying the model structure, they represented the target sentence as a linearized, lexicalized constituency tree. Subsequently, a sequence-to-sequence (seq2seq) model was used to translate the source sentence to this linearized tree, i.e. indeed performing the two tasks. \cite{DBLP:conf/ijcnlp/LeMYM17} made use of the same trick, however, on the dependency tree, proposing a tree-traversal algorithm to linearize the dependency tree. (Their algorithm was however not able to traverse a non-projective tree.)
+
+\section{Proposed work}
+
+In this thesis, the relevance of linguistic information and attention mechanism in NMT is to be examined by mainly two set of approaches as discussed in the previous section: enhancing the attention layers in encoder and/or decoder and in the context of multi-task learning.
+
+\subsection{Enhancing attention layers}
+
+Following \cite{DBLP:conf/naacl/CohnHVYDH16} and \cite{DBLP:conf/naacl/ShawUV18}, we also enrich the attention function by introducing structural bias to the function. However, instead of absolute and relative sequential positions, we would like to use the tree-relative distance from dependency trees.
+
+In a different perspective, an attention layer computes a set of weights to combine a set of values V, each corresponding to a key in the set of keys K, given a query q. However, it is important to note that in most of current systems, set K is also set V itself. Although in Transformer \citep{DBLP:conf/nips/VaswaniSPUJGKP17}, keys, queries and values are being projected through linear projections to diverse the attention results on each node, our motivation is that to explicitly define these K sets separately adds guided and interpretable attention to the model. We could achieve this goal by, on some specific heads, computing the attention energy by K and q are the embeddings of fed linguistic information instead of the word form, e.g.:
+\begin{itemize}
+    \item POS tags
+    \item Dependency labels
+\end{itemize}
+
+
+\subsection{Multi-task learning with Machine Translation}
+
+\subsubsection{POS tagging}
+
+By introducing linguistic information to the model, we hypothesize that the original model was not able to extract this information from raw text, and explicitly feed the model with such information will improve it. However, in the unfortunate event that the translation model has already captured the information of POS tags, it might be helpful to use these attention layers to do POS tagging.
+
+In this setup, we reverse the original goal; instead of trying to improve MT with the help of POS tagging, we are trying to improve POS tagging with the help of MT.
+
+
+\subsubsection{Dependency parsing}
+\cite{DBLP:journals/corr/DozatM16} proposed a graph-based dependency parsing model, in which the output matrix S contains information S(u, v): the probability that u is the head of v.
+This matrix is similar to the idea of the attention scores $\alpha$ in attention model, hence, we could attempt to combine this model and the translation model:
+\begin{itemize}
+    \item Train the mixed model simultaneously to perform 2 tasks.
+    \item Use the matrix S from parsing sub-model as the self-attention weight in the encoder of the MT sub-model.
+\end{itemize}
+
+
+\section{Experiment setups}
+
+\subsection{Data}
+For Czech-English experiment, we use CzEng 1.7 \citep{czeng16:2016}.
+
+For low-resource language pair, UD pipe with pretrained Parsito model \citep{DBLP:conf/conll/StrakaS17} is used to parse the Estonian-English pair from WMT18 New Translation Task\footnote{http://www.statmt.org/wmt18/}.
+
+
+\subsection{Framework and baseline}
+All experiments will use Tensor2Tensor\footnote{https://github.com/tensorflow/tensor2tensor} for model training and visualization.
+
+The seq2seq with Bahdanau attention is chosen to be the baseline for the translation task. While in multi-task learning, each individual model is to be used as baseline for that task.
+
+\subsection{Evaluation methods}
+The proposed models are to be evaluated by:
+\begin{itemize}
+    \item Metrics for its task (BLEU \citep{BLEU} for translation task and unlabeled attachment score (UAS) for parsing).
+    \item Convergence speed.
+    \item Analyzing translated sentences by the model and visualizing attention scores.
+\end{itemize}
+
+\section{Expected outcome}
+The final outcome might be that dependency trees can help improve NMT, in terms of:
+
+\begin{itemize}
+    \item Accuracy, by improving BLEU score compared to a baseline model.
+    \item Convergence speed, which shows the usefulness of syntax-attention.
+    \item In low-resource language pairs (without large parallel corpus) by leveraging the UD dataset.
+    \item In long sentences, by analyzing only samples from this specific case.
+\end{itemize}
+
+On the other hand, the opposite outcome is also possible, which shows that attention model is, indeed, able to capture this type of relation already. If this happens to be the case, we will try to support the analysis by:
+\begin{itemize}
+    \item Visualizing the attention scores and figure out in a quantified way, to what extent the learned attention already covers dependency syntax.
+    \item Showing that models with dependency input has no significant improvement over the one without it.
+    \item Evaluating the performance of the other tasks (tagging, parsing) when being jointly trained. If the other task is improved by multi-tasking with MT, the MT is clearly informative for the task, so it captures the necessary information.
+\end{itemize}
+
+
+\section{Milestones}
+\begin{center}
+\begin{tabular}{l | l} 
+    \textbf{Milestones} & \textbf{Date} \\
+    \hline
+    Replicate Chen's syntax-directed attention & 28-Mar-2018 \\
+    Tree-relative distance encoding in Transformer & 11-Apr-2018 \\
+    Reserved attention heads in Transformer & 25-Apr-2018 \\
+    \hline
+    POS tagging and Transformer model & 02-May-2018 \\
+    Biaffine parsing and Transformer model & 16-May-2018 \\
+    \hline
+    First draft & 15-Jun-2018 \\
+    Second draft & 30-Jun-2018 \\
+    Final & 18-July-2018 \\
+\end{tabular}
+\end{center}
+
+\bibliographystyle{apalike}
+\bibliography{references}
+\end{document}

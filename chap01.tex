@@ -1,0 +1,121 @@
+\chapter{Theoretical Background}
+
+\section{Machine Translation}
+
+\subsection{Rule-base Machine Translation}
+
+\subsection{Statistical Machine Translation}
+
+\subsection{Neural Machine Translation}
+
+\section{Evaluation}
+
+\subsection{Manual Evaluation}
+To evaluate an MT system has been one of the most important problems in the field. Hence, there are many methods proposed, even on how human can judge the performance of machine translated text. Most of the methods simply judge the hypotheses produced by MT systems, which systems are black-boxes.
+
+A very straight-forward evaluation is to direct assess the adequacy and fluency of whole sentences. By adequacy, the annotator is to look at to what extent MT adequately expresses the meaning of the reference sentence. While fluency is merely used to break ties in adequacy. However, these two assessments are subjective and not able to use to compare between MT systems. To address this issue, one can rank full sentences or constituents, i.e. parts of sentences, from several MT systems. Yet \cite{DBLP:conf/wmt/BojarEPZ11} showed that it is problematic to interpret this manual ranking.
+
+% Comprehension test: Blind editing+correctness check.
+
+On the other hand, task-based methods evaluate if information from MT output is as useful as the original sentence. Nevertheless, usefulness is also a vague concept and hardly measured. Therefore, quiz-based evaluation aims to quantify this problem of task-based evaluation in which given machine-translated snippet, evaluator is asked to answer several questions.
+
+% HMEANT: Is the core event structure preserved? HUME
+% Gray-box: Analyzing errors in systems’ output.
+% Glass-box: System-dependent: Does this component work?
+
+Although several manual evaluation methods introduced various strategies to overcome the subjectiveness of human judges, this group is still expensive in terms of both time and money spent. One main reason is that the evaluation is not reproducible. 
+% • Subjective (some judges are more careful/better at guessing).
+% • Not quite consistent judgments from different people.
+% • Not quite consistent judgments from a single person!
+% • Not reproducible (too easy to solve a task for the second time).
+% • Experiment design is critical!
+
+\subsection{Automatic Metrics}
+
+In the urge to find a fast and cheap metric, which must be deterministic, replicable. Moreover, it would be a plus if the metric allows automatic model optimization.  
+% (“tuning”, MERT).
+Having those properties, the proposed metric can be used to check progress, allow researchers to iterate and evaluate their proposal faster and speed up the development of the field.
+
+BLEU \citep{BLEU} is one of these automatic metrics, which is also widely used so far. BLEU score is based on geometric mean of n-gram precision. Specifically, BLEU computes the ratio of 1- to 4-grams of hypothesis confirmed by reference translation(s), geometrically averages them, then scale down the score in case of too short hypothesis. However, BLEU is overly sensitive to word forms and sequences of tokens. There are several proposal to mitigate this, such as using lemmas or deep-lemmas instead of word forms as in SemPOS (Kos and Bojar, 2009).
+• Sequences of characters:
+– e.g. chrF3 (Popovic, 2015): F-score of character 6-grams.
+• Use shorter of gappy sequences:
+– e.g. BEER (Stanojevic and Sima’an, 2014) uses characters and also pairs
+of (not necessarily adjacent) words
+
+\section{Linguistic Information}
+
+\subsection{Dependency Grammar}
+In fact, Dependency Grammar is not a single consistently established grammar, yet a wide range of variants that share several basic assumptions. The primary underlying idea is a syntactic structure which consists of lexical items, connected by binary asymmetric relations. These relations are called dependencies. Although it is said that this concept has been used early in Panini’s work for Sanskrit grammar around 6th to 4th century BCE, one can consider the starting point as when it is introduced systematically by (Tesnière, 1959). 
+The two parties involved in this type of relation are called head (governor, regent)  and dependant (subordinate, modifier).
+
+\begin{figure}
+    \centering
+    \begin{forest}
+    dg edges
+    [S
+        [NP [I]]
+        [VP
+            [V [shot]]
+            [NP
+                [Det [an]]
+                [N [elephant]]
+                [PP
+                    [P [in]]
+                    [NP
+                        [Det [my]]
+                        [N [pajamas]]
+                    ]
+                ]
+            ]
+        ]
+    ]
+    \end{forest}
+    \caption{Phrase-structure Grammar tree}
+    \label{fig:phrase_structure_tree}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{forest}
+    dg edges
+    [shot,
+      [I [I]]
+      [shot]
+      [elephant
+      	[an [an]]
+        [elephant]
+        [in
+        	[in]
+            [pajamas
+                [my [my]]
+                [pajamas]
+            ]
+        ]
+      ]
+    ]
+    \end{forest}
+    \caption{Dependency Grammar tree}
+    \label{fig:dependency_tree}
+\end{figure}
+
+\cref{fig:phrase_structure_tree,fig:dependency_tree} present two samples of different grammar trees. While the phrase-structure tree represents phrases (by non-terminal nodes) and structural categories, the dependency tree depicts the head-dependant relations (with directed arcs) between its lexical items. \cref{fig:dependency_tree_label} also introduces a dependency tree with arc labels which denote functional categories of these relations, which is also known as dependency label.
+
+\begin{figure}
+    \centering
+    \begin{dependency}
+        \begin{deptext}
+        I \& shot \& an \& elephant \& in \& my \& pajamas \\
+        \end{deptext}
+        \depedge{2}{1}{sbj}
+        \depedge{2}{4}{obj}
+        \depedge{4}{3}{dmod}
+        \depedge{4}{5}{nmod}
+        \depedge{5}{7}{pmod}
+        \depedge{7}{6}{dmod}
+    \end{dependency}
+    \caption{Dependency Grammar tree with arc labels}
+    \label{fig:dependency_tree_label}
+\end{figure}
+
+\subsection{Part-of-speech Tags}

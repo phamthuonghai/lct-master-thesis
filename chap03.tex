@@ -1,0 +1,88 @@
+\chapter{Enriching Encoder by Targeting Self-Attention}
+In this thesis, the relevance of linguistic information and attention mechanism in NMT is to be examined by mainly two set of approaches as discussed in the previous section: enhancing the attention layers in encoder and/or decoder and in the context of multi-task learning.
+
+Following \cite{DBLP:conf/naacl/CohnHVYDH16} and \cite{DBLP:conf/naacl/ShawUV18}, we also enrich the attention function by introducing structural bias to the function. However, instead of absolute and relative sequential positions, we would like to use the tree-relative distance from dependency trees.
+
+In a different perspective, an attention layer computes a set of weights to combine a set of values V, each corresponding to a key in the set of keys K, given a query q. However, it is important to note that in most of current systems, set K is also set V itself. Although in Transformer \citep{DBLP:conf/nips/VaswaniSPUJGKP17}, keys, queries and values are being projected through linear projections to diverse the attention results on each node, our motivation is that to explicitly define these K sets separately adds guided and interpretable attention to the model. We could achieve this goal by, on some specific heads, computing the attention energy by K and q are the embeddings of fed linguistic information instead of the word form, e.g.:
+\begin{itemize}
+    \item POS tags
+    \item Dependency labels
+\end{itemize}
+
+
+\section{Structured Attentional Bias}
+
+\subsection{Linear Relative Position}
+The basic motivation is to equip the Transformer model with a sense of token location \citep{DBLP:conf/nips/VaswaniSPUJGKP17}.
+
+ \cite{DBLP:conf/naacl/ShawUV18} proposed to introduce the token location with relative position representations in self-attention function.
+ 
+ \[e_{ij}=\frac{1}{\sqrt{d_z}} x_i W^Q (x_j W^K + a^K_{ij})^T\]
+ 
+ The bias term $a^K_{ij}$ is the embedding of relative position between token $i$ and $j$.
+ 
+ \XXX{Add picture}
+
+\subsection{Tree Relative Distance}
+
+(Our) Tree relative position representations
+
+\begin{figure}
+    \centering
+    \begin{forest}
+    dg edges
+    [ROOT
+        [think, edge label={node[midway,left] {2}}
+          [I, edge label={node[midway,left] {2}} [I]] 
+          [think]
+          [\textbf{is}, red, edge label={node[midway,right] {1}}
+          	[this, edge label={node[midway,left] {1}} [this]]
+            [is]
+            [idea, edge label={node[midway,right] {1}}
+            	[a, edge label={node[midway,right] {2}} [a]]
+                [good [good]]
+                [idea]
+            ]
+          ]
+        ]
+        [., edge label={node[midway,right] {3}} [.]]
+    ]
+    \end{forest}
+    \caption{Example of tree relative distance}
+\end{figure}
+
+\subsection{Tree Traversal Encoding}
+
+\begin{figure}
+    \centering
+    \begin{forest}
+    dg edges
+    [ROOT
+        [think, edge label={node[midway,left] {UU}}
+          [I, edge label={node[midway,left] {UD}} [I]] 
+          [think]
+          [\textbf{is}, red, edge label={node[midway,right] {U}}
+          	[this, edge label={node[midway,left] {D}} [this]]
+            [is]
+            [idea, edge label={node[midway,right] {D}}
+            	[a, edge label={node[midway,right] {DD}} [a]]
+                [good [good]]
+                [idea]
+            ]
+          ]
+        ]
+        [., edge label={node[midway,right] {UUD}} [.]]
+    ]
+    \end{forest}
+    \caption{Example of tree traversal encoding}
+\end{figure}
+
+\section{Specialized Attention Heads} 
+
+In a chosen head, the model will calculate self-attention weight with keys and query as:
+\begin{itemize}
+	\item POS embeddings
+    \item Dependency label embeddings
+\end{itemize}
+
+instead of word embeddings.
