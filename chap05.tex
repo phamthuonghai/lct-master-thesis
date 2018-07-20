@@ -1,66 +1,234 @@
 \chapter{Data and Experiment Setups}
+\label{dataexp}
+
+In this chapter, we present the datasets, environments and configurations that would be used to conduct all of our experiments with the methods proposed in \cref{enriching,multitask}.
 
 \section{Data}
-Experiments in this paper are based on two language pairs: German-to-Czech (de2cs)
-translation trained on Europarl \parcite{europarl} and OpenSubtitles2016
-\parcite{OPUS}, after some cleanup preprocessing, character normalization
-and tokenization. These are the only publicly
-available parallel data for this language pair.
-Czech-to-English (cs2en) translation was
-trained on a subset of CzEng 1.7
-\parcite{czeng16:2016}.\footnote{\url{http://ufal.mff.cuni.cz/czeng}}
-The data sizes used for MT training are summarized in \cref{tab:data}.
-For training on parsing tasks we used the same datasets automatically
-annotated on source sides. For German source we used UDPipe \parcite{udpipe},
-with model trained on Universal Dependencies 2.0 (UD, \inparcite{UD20}).
-For Czech
-source we used annotation provided in CzEng release, originally created 
-by Treex \parcite{tectomt:popel:2010}. This annotation is based on Prague Dependency Treebank
-(PDT, \inparcite{pdt20:2006}). For parsing evaluation we used gold test set from UD
-and PDT, respectively.
+\label{dataexp-data}
 
-For Czech-English experiment, we use CzEng 1.7 \citep{czeng16:2016}.
+We select Czech-to-English as our main translation task.
+Therefore, the primary dataset for our experiments is a subset of CzEng 1.7 \parcite{czeng16:2016}, which from now on will be mentioned as \cs2en.
+To build \cs2en, we select the CzEng's packages \#00 to \#08 for the training set, the first 1000 sentence pairs of package \#09 to be the development set, and the next 10000 sentence pairs to be the test set.
+The reason for this subset is that we can have a standard average-size dataset and the training is more likely to converge within an observable amount of time. 
+Basic statistic of this dataset is summarized in \cref{tab:data}.
 
-For low-resource language pair, UD pipe with pretrained Parsito model \citep{DBLP:conf/conll/StrakaS17} is used to parse the Estonian-English pair from WMT18 New Translation Task\footnote{http://www.statmt.org/wmt18/}.
+Among many formats of CzEng, we choose the export format of this dataset for the smallest file size, easier to align sentence pairs while still maintain sufficient information. Each line in the export format file is an array of 15 blocks separated by tab characters. For more detail about the data in these blocks, we encourage the reader to look them up in the dataset's home page.\footnote{\url{http://ufal.mff.cuni.cz/czeng}} For our experiments, we only need the 3\textsuperscript{th} block and the 7\textsuperscript{th} blocks, which are the a-layers (surface-syntactic trees) of the source sentence (Czech) and the target sentence (English). Each of these a-layers is in factored form consisting of:
 
-\begin{table}
+\begin{enumerate}
+    \item Word form.
+    \item Lemma.
+    \item Morphological tag (Czech) or POS tag (English).
+    \item Index in the sentence (absolute position).
+    \item Index of the governor (dependency head).
+    \item Syntactic function (dependency label).
+\end{enumerate}
+
+These factors are separated by a vertical bar (\texttt{|}).
+
+\cref{tab:data-czeng} demonstrates an example of both a-layers from the source side and the target side, and also the information we can parse from them. Apart from the word forms of the sentences from both sides, we are only interested in the POS tag, the dependency head and the dependency label of each token in the source sentence.
+
+\begin{table}[t]
+    \centering
+    \begin{tabular}{p{0.3\linewidth}|p{0.64\linewidth}}
+        Source a-layer (factored form) & 
+\begin{verbatim}
+Udělali|udělat_:W|VpMP---XR-AA---|1|0|Pred
+jsme|být|VB-P---1P-AA---|2|1|AuxV si|se_^(
+zvr._zájmeno/částice)|P7-X3----------|3|1|
+Adv malý|malý|AAIS4----1A----|4|5|Atr průz
+kum|průzkum|NNIS4-----A----|5|1|Obj .|.|Z:
+-------------|6|0|AuxK
+\end{verbatim}\\
+        \hline
+        Source token & Udělali jsme si malý průzkum .\\
+        \hline
+        Source POS tag & VpMP\texttt{---}XR-AA\texttt{---} VB-P\texttt{---}1P-AA\texttt{---} P7-X3\texttt{----------} AAIS4\texttt{----}1A\texttt{----} NNIS4\texttt{-----}A\texttt{----} Z:\texttt{-------------}\\
+        \hline
+        Source dependency head & 0 1 1 5 1 0\\
+        \hline
+        Source dependency label & Pred AuxV Adv Atr Obj AuxK \\
+        \hline
+        Source dependency tree &
+        \begin{dependency}
+            \begin{deptext}
+            Udělali \& jsme \& si \& malý \& průzkum \&  . \\
+            \end{deptext}
+            \deproot{1}{Pred}
+            \depedge{2}{1}{AuxV}
+            \depedge{3}{1}{Adv}
+            \depedge{4}{5}{Atr}
+            \depedge{5}{1}{Obj}
+            \deproot{6}{AuxK}
+        \end{dependency} \\
+        \hline
+        Source diagonal head & 0 1 2 3 4 5 \\
+        \hline
+        \hline
+        Target a-layer (factored form) & 
+\begin{verbatim}
+We|we|PRP|1|2|Sb did|do|VBD|2|0|Pred a|a|D
+T|3|5|AuxA little|little|JJ|4|5|Atr resear
+ch|research|NN|5|2|Obj .|.|.|6|0|AuxK
+\end{verbatim}\\
+        \hline
+        Target token & We did a little research .\\
+    \end{tabular}
+    \caption{One sentence pair in the \cs2en dataset.}
+    \label{tab:data-czeng}
+\end{table}
+
+For training and testing on parsing task, we use the same dataset whose source sentences were automatically annotated.
+The annotation provided in the CzEng release was originally created by Treex \citep{tectomt:popel:2010}.
+This annotation is based on the Prague Dependency Treebank (PDT, \cite{pdt20:2006}), so we also use the PDT test set as a gold-annotated treebank to test our models.
+
+\begin{table}[t]
 \begin{center}
-\small
 \begin{tabular}{lrr}
-\textbf{Dataset}	& \textbf{de2cs} & \textbf{cs2en} \\
+	& \textbf{\de2cs} & \textbf{\cs2en} \\
 \hline
-Train sent. pairs     		& 8.8M      	& 5.2M \\
-Train tokens (src/tgt)		& 89M/78M  		& 61M/69M \\
-Dev. sent. pairs         	& news 2011: 3k & 1k \\ % test and dev in export format are not available
-Test sent. pairs          	& news 2013: 3k & 10k \\
-%Source POS tags          	& TreeTagger \parcite{treetagger} & Treex \parcite{tectomt:popel:2010} \\
-Dep. parser				  	& UD 2.0 & Treex \\
-Gold dep. treebank     & de UD test & PDT test  \\
+Train set sentence pairs     		& 8.8M      	& 5.2M \\
+Train set source tokens		        & 89M  		    & 61M \\
+Train set target tokens		        & 78M  		    & 69M \\
+Development set sent. pairs         & news 2011: 3k & 1k \\
+Test set sentence pairs          	& news 2013: 3k & 10k \\
+Dependency parser generating the annotations				  	& UD 2.0 & Treex \\
+Gold dependency treebank     & de UD test & PDT test  \\
 \end{tabular}
 \end{center}
 \caption{Data used in our experiments.}
 \label{tab:data}
 \end{table}
 
+For the multi-task models, we also experiment with a German-to-Czech corpus (\de2cs) which were collected and processed from Europarl \citep{europarl} and OpenSubtitles2016 \citep{OPUS} by \cite{machacek2018de2cs}.
+Similar to CzEng, this dataset already includes the auto-generated trees for the source sentences.
+The parser used to generate such trees is the UDPipe framework \citep{udpipe} trained on Universal Dependencies 2.0 (UD, \cite{UD20}).
+The reason for this dataset is that it is useful for us to have additional experiments with the new UD annotation, apart from the PDT. Nevertheless, the \de2cs dataset comes with only CoNLL-U format\footnote{\url{http://universaldependencies.org/format.html}} (tab separated table, \cref{tab:data-decs}) and needs to be converted to our export format.
+
+The CoNLL-U format has ten columns:
+\begin{enumerate}
+    \item ID: Word index, starting at 1.
+    \item FORM: Word form or punctuation symbol.
+    \item LEMMA: Lemma.
+    \item UPOS: Universal POS tag.
+    \item XPOS: Language-specific POS tag (morphological tags in case of Czech language).
+    \item FEATS: List of morphological features.
+    \item HEAD: Head of the current word (0 for root).
+    \item DEPREL: Universal dependency label.
+    \item DEPS: Enhanced dependency graph.
+    \item MISC: Other annotation.
+\end{enumerate}
+
+\begin{landscape}
+    \begin{table}[t]
+    \begin{center}
+    \begin{tabular}{l|l|l|l|l|p{4.7cm}|l|l|l|l}
+        \textbf{ID} & \textbf{FORM} & \textbf{LEMMA} & \textbf{UPOS} & \textbf{XPOS} & \textbf{FEATS} & \textbf{HEAD} & \textbf{DEPREL} & \textbf{DEPS} & \textbf{MISC} \\
+     \hline
+     1 & `` & `` & PUNCT & \$( & \_ & 8 & punct & \_ & SpaceAfter=No \\
+     2 & Welcher & welche & PRON & PWS & \texttt{Case=Nom|Gender=Masc| Number=Sing| PronType=Int} & 3 & det & \_ & \_ \\
+     3 & Kollege & Kollege & NOUN & NN & \texttt{Case=Nom|Gender=Masc| Number=Sing} & 8 & nsubj & \_ & \_ \\
+     4 & hat & haben & AUX & VAFIN & \texttt{Mood=Ind|Number=Sing| Person=3|Tense=Pres| VerbForm=Fin} & 8 & aux & \_ & \_ \\
+     5 & Ihnen & Sie\texttt{|}sie & PRON & PPER & \texttt{Case=Dat|Person=2| Polite=Form| PronType=Prs} & 8 & iobj & \_ & \_ \\
+     6 & denn & denn & ADV & ADV & \_ & 8 & advmod & \_ & \_ \\
+     7 & 99 & 99 & NUM & CARD & \texttt{NumType=Card} & 8 & obj & \_ & \_ \\
+     8 & gesagt & sagen & VERB & VVPP & \texttt{VerbForm=Part} & 0 & root & \_ & SpaceAfter=No \\
+     9 & ? & ? & PUNCT & \$. & \_ & 8 & punct & \_ & SpaceAfter=No \\
+     10 & " & " & PUNCT & \$( & \_ & 8 & punct & \_ & \_ \\\
+    \end{tabular}
+    \end{center}
+    \caption{A source sentence in \de2cs's CoNLL-U format.}
+    \label{tab:data-decs}
+    \end{table}
+\end{landscape}
+
 \section{Experiment Setups}
+\label{dataexp-exp}
 
-All experiments will use Tensor2Tensor\footnote{https://github.com/tensorflow/tensor2tensor} for model training and visualization.
+Experiments in this thesis were carried out with Tensor2Tensor\footnote{\url{https://github.com/tensorflow/tensor2tensor}} (T2T) version 1.5.6 at the
+\emph{word level}, i.e. without using subword units \citep{sennrich2015neural}.
+We decided for this simplification for an easier alignment between the translation and parsing tasks.
+Because of operating on the word level, we limited the vocabulary size to be 500000 tokens for each language.
 
-The seq2seq with Bahdanau attention is chosen to be the baseline for the translation task. While in multi-task learning, each individual model is to be used as baseline for that task.
+The \transformer's hyperparameter set \textit{transformer\_base} \citep{TrainingTipsfortheTransformerModel} was used as default for all model variants. From now on, we would like to refer this to be one of the baseline model, named \transformerbase. To be specific, some important hyperparameters in this setting are:
+\begin{itemize}
+    \item Maximum sequence length = 256.
+    \item 6 layers in the encoder.
+    \item 6 layers in the decoder.
+    \item 8 self-attention heads on each mutli-head attention layer.
+    \item Hidden size = 512.
+    \item Attention hidden size $d_k=512/8=64$.
+    \item Using layer normalization.
+    \item Layer preprocess and postprocess dropout = 0.1.
+    \item Attention dropout = 0.1.
+    \item ReLU (rectified linear unit) dropout = 0.1.
+    \item Learning rate warmup steps = 8000.
+    \item Learning rate = 0.2.
+    \item Adam optimizer:
+        \begin{itemize}
+            \item $\epsilon = 1e^{-9}$.
+            \item $\beta_1 = 0.9$.
+            \item $\beta_2 = 0.997$.
+        \end{itemize}
+    \item \textit{Batch size = 3072.}
+\end{itemize}
 
-Experiments in this section were carried out with T2T version 1.5.6 at the
-\emph{word level}, i.e. without using subword units. We decided for this
-simplification for an easier alignment between the translation and parsing
-tasks.
+Batch size was the only hyperparameter that was set differently from the default \textit{transformer\_base}. The reason was we needed to fit all of our models to a single \textit{GPU (graphical processing unit)} nVidia GTX 1080Ti, which could not be done with the batch size of 4096. It is crucial for all experiments to have exactly the same batch size when training for comparable results.
 
-\section{Model Architectures}
+Each variant of the \transformer model also has its own specific hyperparameters that we experimented with, namely:
 
-The Transformer hyper-parameter set transformer\_base \cite{TrainingTipsfortheTransformerModel} was used for all model variants with hidden size 512, filter size 2048, 8 self-attention heads and 6 layers in each of the encoder and decoder.
+\begin{itemize}
+    \item \textbf{\transformerrel} - \transformer with relative position \citep{DBLP:conf/naacl/ShawUV18}, which is also our second baseline:
+        \begin{itemize}
+            \item Remove positional encoding.
+            \item Maximum relative position = 20, i.e. if two tokens are more than 20 tokens apart, the relative position of this pair is a designated symbol similar to the out-of-vocabulary symbol.
+        \end{itemize}
+    \item \textbf{\TreeDistance} - \transformer with tree distance:
+        \begin{itemize}
+            \item Maximum tree distance = 5 or 20 (similar to the maximum relative position).
+            \item Do or do not combine with the relative position.
+            \item Do or do not use the positional encoding.
+        \end{itemize}
+    \item \textbf{\TreeTraversal} - \transformer with tree traversal:
+        \begin{itemize}
+            \item Maximum traversal path length = 10 (similar to the max relative position).
+            \item Do or do not combine with the relative position.
+            \item Do or do not use the positional encoding.
+        \end{itemize}
+    \item \textbf{\SpecPOS \& \SpecDep} - \transformer with specialized attention heads:
+        \begin{itemize}
+            \item Type of information to guide the specialized attention head:
+                \begin{itemize}
+                    \item POS tags.
+                    \item Dependency labels.
+                \end{itemize}
+            \item Do or do not combine with the relative position.
+        \end{itemize}
+    \item \textbf{\DepParse \& \DiagonalParse} - Leveraging the self-attention weights of the \transformer's encoder to jointly translate and parse source sentences:
+        \begin{itemize}
+            \item The layer from which the parse tree is demanded: 0 to 5.
+        \end{itemize}
+\end{itemize}
 
-We also examined different joint model setups by leveraging the encoder's self-attention weight from various layers (layer 0 to layer 5).
+For the preprocessing, the only step needed to be done was to insert a dummy \texttt{<ROOT>} token in the beginning of every sentence, so that the selected self-attention matrix would be able to represent a dependency tree properly.
+This was only required for the \DepParse model.
+After inference, this \texttt{<ROOT>} token was removed before the evaluation.
 
-For the preprocessing, the only step needed to be done was to insert a dummy `ROOT' word in the beginning of every sentence, so that the selected self-attention matrix would be able to represent a dependency tree correctly.
+During inference, we used beam search with:
+\begin{itemize}
+    \item Beam size = 4
+    \item $\alpha = 0.6$
+    \item Decoding batch size = 4
+\end{itemize}
 
 \section{Evaluation}
+\label{dataexp-eval}
 
-We used BLEU score to automatically evaluate translation task's performance, while unlabeled attachment score is employed for dependency parsing task.
+We used BLEU score to automatically evaluate translation task's performance.
+To be specific, we report cased BLEU using sacreBLEU,\footnote{\url{https://github.com/mjpost/sacreBLEU}} a Python implementation of the official script in the Workshop of Machine Translation (WMT) shared task.\footnote{\url{ftp://jaguar.ncsl.nist.gov/mt/resources/mteval-v13a.pl}}
+In addition, MT-ComparEval \citep{klejch2015mt} was also used to double check the score from sacreBLEU and to compute the statistical significance with bootstrap resampling \citep{koehn2004statistical}.
+
+For the dependency parsing task, unlabeled attachment score (UAS) was employed to evaluate the output parse tree.
+UAS is in fact a precision score that measure the percentage of correct predicted heads.
+The precision is also used to evaluate the diagonal parsing task.
+
+To be able to observe the attention pattern of our models, we utilized the attention visualization notebook\footnote{\url{https://github.com/tensorflow/tensor2tensor/blob/master/tensor2tensor/visualization/TransformerVisualization.ipynb}} in the T2T source code repository.

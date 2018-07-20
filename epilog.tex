@@ -1,6 +1,47 @@
 \chapter*{Conclusion}
 \addcontentsline{toc}{chapter}{Conclusion}
 
-Furthermore, leveraging the self-attention weights to do both parsing and translation outperformed the baseline translation model and was competitive to referential parsers. However, our model was trained on a synthetic dataset in case of parsing. Hence, it is a good practice to fine-tune our model with the gold annotated trees, which we believe should lead to a better parsing performance, yet we leave it for future work.
+In this thesis, we proposed several methods to exploit the sentence structure in NMT by manipulation of the attention mechanism.
+While aiming at the same goal, the previous works focused mostly on the \seq2seq model utilizing RNNs, we explore the state-of-the-art Transformer model which was built entirely on the attention mechanism.
+We speculate that this mechanism makes it easier for us to direct the neural network's behavior with additional syntactic information, e.g. the dependency tree.
 
-We further invented a novel component of Transformer model for dependency parsing by promoting the dependency interpretation of self-attention, and showed that Transformer model can be used as very effective and precise parser, aiming at beating state-of-the-art, while not loosing ability to translate.
+We evaluated the models on Czech-to-English and German-to-Czech translations, both in relatively large data setting, against the \transformerbase (positional encoding) and \transformerrel (relative position).
+
+The first set of methods attempted to enrich the encoder with source-side dependency tree.
+First, we replaced the positional encoding and relative position with our proposed tree distance and tree traversal encoding.
+BLEU scores of these models showed no improvement over the baselines.
+However, combining our proposals with the baselines reported +0.5 to +0.8 BLEU against both baselines.
+In addition, experiment results suggested that tree traversal works better than tree distance.
+
+In this direction, we also proposed a specialized attention layer.
+The difference between this and the standard attention layer is that the key and query come from an additional input sequence containing linguistic information, either POS tags or dependency labels.
+The specialized POS head did not bring any improvement over baselines.
+On the other hand, specialized dependency head brought +0.95 to +1.06 compared against the baselines without this modification.
+
+We further invented a novel component of the Transformer model for sentence structure parsing by promoting the interpretation of self-attention as dependency syntax, and showed that the Transformer model can be used as a precise parser.
+As suggested by the results, constraining self-attention to both true dependency as well as a simple diagonal matrix helped translation task at insignificant extra cost.
+The best model of \DepParse and \DiagonalParse achieved +1.35 and +1.48 BLEU improvements, respectively. 
+The models also performed well on parsing tasks.
+\DepParse's best model achieved 91.56 UAS on the auto-generated treebanks, while \DiagonalParse, unsurprisingly, obtained 99.99\% accuracy.
+Furthermore, \DepParse model performance is comparable to the referential parsers that were used to provide the parallel corpus with dependency trees.
+
+It is clear from the results that enriching the \transformer with sentence structure can help.
+However, the \transformer model is in fact able to capture this type of linguistic information already on its own and the guidance through multi-task learning is needed only as a small push towards trees following the annotation rules.
+
+
+% Future works
+
+\section*{Future Work}
+
+While this thesis has explored various possibilities of exploiting sentence structure in NMT, we believe that there is still a vast room for improvements, which includes but is not limited to:
+
+\paragraph{Fine-tuning the \DepParse model with gold-annotated data.}
+Leveraging the self-attention weights to do both parsing and translation outperformed the baseline translation model and was comparable to referential parsers.
+However, our model was trained on a synthetic treebank.
+Hence, we could also try to fine-tune our model with the gold annotated treebank, which we believe should lead to a better parsing performance.
+
+\paragraph{Examining dependency on subword units.}
+In this thesis, we were working on the word level, without subword units, for an easier alignment with the dependency structure of the sentence.
+Hence, all of the models had to face a serious out-of-vocabulary problem.
+We would like to examine various methods to push the dependency relation beyond the word level, to subword level.
+With that, we will be able to compare our proposed methods against the state-of-the-art translation models.

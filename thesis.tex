@@ -38,8 +38,11 @@
 \usepackage{amsmath}        % extensions for typesetting of math
 \usepackage{amsfonts}       % math fonts
 \usepackage{amsthm}         % theorems, definitions, etc.
+\usepackage{amssymb}
 \usepackage{bbding}         % various symbols (squares, asterisks, scissors, ...)
 \usepackage{bm}             % boldface symbols (\bm)
+\usepackage{caption}
+\usepackage{subcaption}
 \usepackage{graphicx}       % embedding of pictures
 \usepackage{fancyvrb}       % improved verbatim environment
 \usepackage{natbib}         % citation style AUTHOR (YEAR), or AUTHOR [NUMBER]
@@ -50,13 +53,17 @@
 \usepackage{booktabs}       % improved horizontal lines in tables
 \usepackage{paralist}       % improved enumerate and itemize
 \usepackage[usenames]{xcolor}  % typesetting in color
-
+\usepackage{lscape}
+\usepackage{listings}
 \usepackage[linguistics]{forest}
 \forestset{
 dg edges/.style={for tree={parent anchor=south, child anchor=north,align=center,base=bottom,where n children=0{tier=word,edge=dotted,calign with current edge}{}}},
 }
 \usepackage[noabbrev,capitalise]{cleveref}
 \usepackage{tikz-dependency}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.15}
+\usepackage{xspace}
 
 \def\XXX#1{\textcolor{red}{#1}}
 \def\hideXXX#1{}
@@ -66,10 +73,23 @@ dg edges/.style={for tree={parent anchor=south, child anchor=north,align=center,
 \def\perscite#1{\citet{#1}} % Smith (2019)
 \def\inparcite#1{\citealp{#1}} % Smith, 2019; to be used in parentheses
 
+\def\de2cs{\texttt{de2cs}\xspace}
+\def\cs2en{\texttt{cs2en}\xspace}
+\def\transformer{Transformer\xspace}
+\def\transformerbase{\texttt{Transformer base}\xspace}
+\def\transformerrel{\texttt{Transformer relative}\xspace}
+\def\seq2seq{\texttt{seq2seq}\xspace}
+\def\DiagonalParse{\texttt{DiagonalParse}\xspace}
+\def\DepParse{\texttt{DepParse}\xspace}
+\def\TreeDistance{\texttt{TreeDistance}\xspace}
+\def\TreeTraversal{\texttt{TreeTraversal}\xspace}
+\def\SpecPOS{\texttt{SpecPOS}\xspace}
+\def\SpecDep{\texttt{SpecDep}\xspace}
+
 %%% Basic information on the thesis
 
 % Thesis title in English (exactly as in the formal assignment)
-\def\ThesisTitle{Exploiting Sentence Structure with Attention Mechanism in Neural Machine Translation}
+\def\ThesisTitle{Exploiting Sentence Structure in Neural Machine Translation}
 
 % Author of the thesis
 \def\ThesisAuthor{Thuong-Hai Pham}
@@ -98,12 +118,29 @@ dg edges/.style={for tree={parent anchor=south, child anchor=north,align=center,
 % An optional dedication: you can thank whomever you wish (your supervisor,
 % consultant, a person who lent the software, etc.)
 \def\Dedication{%
-Dedication. \XXX{TODO}
+First, I would like to express my gratitude to my supervisor, Prof. Ond\v{r}ej Bojar, for his dedicated guidance.
+
+I am deeply appreciated with the financial support from the Erasmus Mundus scholarship.
+
+I also want to thank Prof. Mark\'{e}ta Lopatkov\'{a}, Mrs. Bobbye Pernice and Mr. Mike Rosner for always helping me with the important matters before and during my Erasmus Mundus LCT program.
+
+I am very grateful to Martin Popel for his recommendations regarding the technical aspects of this thesis, and XiaoYu Bai for her proofreading. 
+
+I would like to give a heartfelt thank to my family for always being supportive of my choices in life.
+
+And thanks to you whoever is reading, for your interest.
 }
 
 % Abstract (recommended length around 80-200 words; this is not a copy of your thesis assignment!)
 \def\Abstract{%
-Abstract. \XXX{TODO}
+Neural machine translation has been lately established as the new state of the art in machine translation, especially with the Transformer model.
+This model emphasized the importance of self-attention mechanism and suggested that it could capture some linguistic phenomena.
+However, this claim has not been examined thoroughly, so we propose two main groups of methods to examine the relation between these two.
+Our methods aim to improve the translation performance by directly manipulating the self-attention layer.
+The first group focuses on enriching the encoder with source-side syntax with tree-related position embeddings or our novel specialized attention heads.
+The second group is a joint translation and parsing model leveraging self-attention weight for the parsing task.
+It is clear from the results that enriching the \transformer with sentence structure can help.
+More importantly, the \transformer model is in fact able to capture this type of linguistic information with guidance in the context of multi-task learning at nearly no increase in training costs.
 }
 
 % 3 to 5 keywords (recommended), each enclosed in curly braces
@@ -153,6 +190,30 @@ Abstract. \XXX{TODO}
 %%% In mathematical theses, it could be better to move the list of abbreviations to the beginning of the thesis.
 \chapwithtoc{List of Abbreviations}
 
+\begin{table}[h]
+    \begin{tabular}{p{2cm}l}
+        BLEU & bilingual evaluation understudy \\
+        cs & Czech \\
+        cs2en & Czech-to-English \\
+        de & German \\
+        de2cs & German-to-Czech \\
+        en & English \\
+        GPU & graphical processing unit \\
+        MT & machine translation \\
+        NMT & neural machine translation \\
+        PDT & Prague Dependency Treebank \\
+        POS & part of speech \\
+        RBMT & rule-based machine translation \\
+        ReLU & rectified linear unit \\
+        RNN & recurrent neural network \\
+        seq2seq & sequence-to-sequence \\
+        SMT & statistical machine translation \\
+        T2T & Tensor2Tensor \\
+        UD & Universal Dependencies \\
+        WMT & Workshop on Machine Translation \\
+    \end{tabular}
+\end{table}
+
 %%% Attachments to the master thesis, if any. Each attachment must be
 %%% referred to at least once from the text of the thesis. Attachments
 %%% are numbered.
@@ -164,10 +225,10 @@ Abstract. \XXX{TODO}
 %%% source code, data files, interactive charts, etc.). Electronic attachments
 %%% should be uploaded to SIS and optionally also included in the thesis on a~CD/DVD.
 %%% Allowed file formats are specified in provision of the rector no. 72/2017.
-\appendix
-\chapter{Attachments}
+% \appendix
+% \chapter{Attachments}
 
-\section{First Attachment}
+% \section{First Attachment}
 
-\openright
+% \openright
 \end{document}

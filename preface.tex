@@ -1,8 +1,33 @@
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
 
-Neural Machine Translation (NMT) has been lately established state of the art in machine translation (MT). To achieve this result, most NMT models highly rely on the attention mechanism \citep{bahdanau:etal:attention:iclr:2015}. It was claimed that this attention mechanism can capture some linguistic structures and phenomena \citep{DBLP:conf/nips/VaswaniSPUJGKP17}. Although \cite{DBLP:conf/acl/BelinkovDDSG17} and \cite{DBLP:conf/emnlp/ShiPK16} had analyzed the amount of linguistic information, POS tags and syntax, respectively, NMT systems could capture, their analyses only applied to systems without attention mechanism. More notably, \cite{DBLP:conf/ijcnlp/GhaderM17} had examined the similarities and differences between attention and alignment matrix. However, their goal was merely to inspect the alignment, not linguistic knowledge in source sentence nor target sentences. Therefore, this thesis is aimed to examine the relevance between linguistic structures, e.g. dependency syntax \citep{melvcuk1988dependency}, and the (self-)attention mechanism (within sentence/self-attention) in NMT, by focusing on two basic questions:
+% \section*{Motivation}
+
+Neural machine translation (NMT) has been lately established as the new state of the art in machine translation (MT).
+To achieve this result, most NMT models highly rely on the attention mechanism \citep{bahdanau:etal:attention:iclr:2015}.
+
+The dependence of NMT models on the attention mechanism is further streng-thened in the \transformer model \citep{DBLP:conf/nips/VaswaniSPUJGKP17}.
+This model gets rid of the recurrent neural network (RNN), and replaces it with self-attention layers.
+It was claimed that this self-attention mechanism can capture some linguistic structures and phenomena.
+
+Although \cite{DBLP:conf/acl/BelinkovDDSG17} and \cite{DBLP:conf/emnlp/ShiPK16} analyzed the amount of linguistic information (POS tags and syntax, respectively) NMT systems could capture, their analyses only applied to systems without attention mechanism.
+More notably, \cite{DBLP:conf/ijcnlp/GhaderM17} examined the similarities and differences between attention and alignment matrix.
+However, their goal was merely to inspect the alignment, not the linguistic knowledge of the source sentence nor target sentence.
+More importantly, most of the previous works attempting to examine the link between NMT and linguistic information focused on the common but outdated sequence-to-sequence model \citep{DBLP:conf/nips/SutskeverVL14}.
+
+This thesis aims to fill the gap and examine the relation between linguistic structures of source sentences, e.g. dependency syntax \citep{melvcuk1988dependency}, and the self-attention mechanism (within the sentence) in the relatively new \transformer's encoder, by focusing on two basic questions:
 \begin{itemize}
-	\item Does explicitly feeding dependency parse to an NMT system help?
-    \item If not, is the attention mechanism able to capture these information?
+	\item Does explicitly feeding source-side syntactic knowledge to an NMT system help translation quality?
+    \item If not, is the attention mechanism perhaps already capturing this information?
 \end{itemize}
+
+\section*{Outline}
+
+Apart from this introduction, the thesis is organized into six chapters:
+
+\paragraph{Chapter 1} briefly introduces the theoretical background regarding machine translation and several forms of linguistic information.
+\paragraph{Chapter 2} reviews the previous related works that our methods are built upon.
+\paragraph{Chapter 3} presents our first set of attempts to improve the \transformer's model by enriching the encoder's self-attention with information about the source sentence structure.
+\paragraph{Chapter 4} proposes our joint translating and parsing model by promoting the interpretation of the self-attention layers in the encoder.
+\paragraph{Chapter 5} presents the datasets that are used to evaluate our approaches and details about our experimental systems.
+\paragraph{Chapter 6} reports the results of our experiments and further analyzes the training time and the behavior of the neural network.
