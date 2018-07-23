@@ -1,7 +1,7 @@
 \chapter{Data and Experiment Setups}
 \label{dataexp}
 
-In this chapter, we present the datasets, environments and configurations that would be used to conduct all of our experiments with the methods proposed in \cref{enriching,multitask}.
+In this chapter, we present the datasets, environments and configurations used to conduct all of our experiments with the methods proposed in \cref{enriching,multitask}.
 
 \section{Data}
 \label{dataexp-data}
@@ -9,10 +9,14 @@ In this chapter, we present the datasets, environments and configurations that w
 We select Czech-to-English as our main translation task.
 Therefore, the primary dataset for our experiments is a subset of CzEng 1.7 \parcite{czeng16:2016}, which from now on will be mentioned as \cs2en.
 To build \cs2en, we select the CzEng's packages \#00 to \#08 for the training set, the first 1000 sentence pairs of package \#09 to be the development set, and the next 10000 sentence pairs to be the test set.
-The reason for this subset is that we can have a standard average-size dataset and the training is more likely to converge within an observable amount of time. 
+The reason for this subset is that we can have a standard average-size dataset and the training is more likely to converge within a reasonable amount of time. 
 Basic statistic of this dataset is summarized in \cref{tab:data}.
 
-Among many formats of CzEng, we choose the export format of this dataset for the smallest file size, easier to align sentence pairs while still maintain sufficient information. Each line in the export format file is an array of 15 blocks separated by tab characters. For more detail about the data in these blocks, we encourage the reader to look them up in the dataset's home page.\footnote{\url{http://ufal.mff.cuni.cz/czeng}} For our experiments, we only need the 3\textsuperscript{th} block and the 7\textsuperscript{th} blocks, which are the a-layers (surface-syntactic trees) of the source sentence (Czech) and the target sentence (English). Each of these a-layers is in factored form consisting of:
+Among the available formats of CzEng, we choose the export format of this dataset for the smallest file size, ease of alignment between sentence pairs while still maintaining sufficient information.
+Each line in the export format file is an array of 15 blocks separated by the tab character.
+For more details about the data in these blocks, we encourage the reader to look them up in the dataset's home page.\footnote{\url{http://ufal.mff.cuni.cz/czeng}} 
+For our experiments, we only need the 3\textsuperscript{th} block and the 7\textsuperscript{th} blocks, which are the a-layers (surface-syntactic trees) of the source sentence (Czech) and the target sentence (English).
+Each of these a-layers is in factored form (components delimited by the vertical bar `\texttt{|}') and consists of:
 
 \begin{enumerate}
     \item Word form.
@@ -23,11 +27,11 @@ Among many formats of CzEng, we choose the export format of this dataset for the
     \item Syntactic function (dependency label).
 \end{enumerate}
 
-These factors are separated by a vertical bar (\texttt{|}).
-
-\cref{tab:data-czeng} demonstrates an example of both a-layers from the source side and the target side, and also the information we can parse from them. Apart from the word forms of the sentences from both sides, we are only interested in the POS tag, the dependency head and the dependency label of each token in the source sentence.
+\cref{tab:data-czeng} demonstrates an example of both a-layers from the source side and the target side, and also the information we can extract from them.
+Apart from the word forms of the sentences from both sides, we are only interested in the POS tag, the dependency head and the dependency label of each token in the source sentence.
 
 \begin{table}[t]
+    \small
     \centering
     \begin{tabular}{p{0.3\linewidth}|p{0.64\linewidth}}
         Source a-layer (factored form) & 
@@ -82,6 +86,7 @@ The annotation provided in the CzEng release was originally created by Treex \ci
 This annotation is based on the Prague Dependency Treebank (PDT, \cite{pdt20:2006}), so we also use the PDT test set as a gold-annotated treebank to test our models.
 
 \begin{table}[t]
+\small
 \begin{center}
 \begin{tabular}{lrr}
 	& \textbf{\de2cs} & \textbf{\cs2en} \\
@@ -99,8 +104,8 @@ Gold dependency treebank     & de UD test & PDT test  \\
 \label{tab:data}
 \end{table}
 
-For the multi-task models, we also experiment with a German-to-Czech corpus (\de2cs) which were collected and processed from Europarl \citep{europarl} and OpenSubtitles2016 \citep{OPUS} by \cite{machacek2018de2cs}.
-Similar to CzEng, this dataset already includes the auto-generated trees for the source sentences.
+For the multi-task models, we also experiment with a German-to-Czech corpus (\de2cs) which was collected and processed from Europarl \citep{europarl} and OpenSubtitles2016 \citep{OPUS} by \cite{machacek2018de2cs}.
+Similarly to CzEng, this dataset already includes auto-generated trees for source sentences.
 The parser used to generate such trees is the UDPipe framework \citep{udpipe} trained on Universal Dependencies 2.0 (UD, \cite{UD20}).
 The reason for this dataset is that it is useful for us to have additional experiments with the new UD annotation, apart from the PDT. Nevertheless, the \de2cs dataset comes with only CoNLL-U format\footnote{\url{http://universaldependencies.org/format.html}} (tab separated table, \cref{tab:data-decs}) and needs to be converted to our export format.
 
@@ -120,6 +125,7 @@ The CoNLL-U format has ten columns:
 
 \begin{landscape}
     \begin{table}[t]
+    \small
     \begin{center}
     \begin{tabular}{l|l|l|l|l|p{4.7cm}|l|l|l|l}
         \textbf{ID} & \textbf{FORM} & \textbf{LEMMA} & \textbf{UPOS} & \textbf{XPOS} & \textbf{FEATS} & \textbf{HEAD} & \textbf{DEPREL} & \textbf{DEPS} & \textbf{MISC} \\
@@ -147,15 +153,17 @@ The CoNLL-U format has ten columns:
 Experiments in this thesis were carried out with Tensor2Tensor\footnote{\url{https://github.com/tensorflow/tensor2tensor}} (T2T) version 1.5.6 at the
 \emph{word level}, i.e. without using subword units \citep{sennrich2015neural}.
 We decided for this simplification for an easier alignment between the translation and parsing tasks.
-Because of operating on the word level, we limited the vocabulary size to be 500000 tokens for each language.
+Because of operating on the word level, we limited the vocabulary size to be 500,000 tokens for each language.
 
-The \transformer's hyperparameter set \textit{transformer\_base} \citep{TrainingTipsfortheTransformerModel} was used as default for all model variants. From now on, we would like to refer this to be one of the baseline model, named \transformerbase. To be specific, some important hyperparameters in this setting are:
+The \transformer's hyperparameter set \textit{transformer\_base} \citep{TrainingTipsfortheTransformerModel} was used as default for all model variants.
+From now on, we refer this to be one of the baseline model, named \transformerbase. To be specific, some important hyperparameters in this setting are:
+
 \begin{itemize}
     \item Maximum sequence length = 256.
     \item 6 layers in the encoder.
     \item 6 layers in the decoder.
     \item 8 self-attention heads on each mutli-head attention layer.
-    \item Hidden size = 512.
+    \item Embedding size = 512.
     \item Attention hidden size $d_k=512/8=64$.
     \item Using layer normalization.
     \item Layer preprocess and postprocess dropout = 0.1.
@@ -172,12 +180,13 @@ The \transformer's hyperparameter set \textit{transformer\_base} \citep{Training
     \item \textit{Batch size = 3072.}
 \end{itemize}
 
-Batch size was the only hyperparameter that was set differently from the default \textit{transformer\_base}. The reason was we needed to fit all of our models to a single \textit{GPU (graphical processing unit)} nVidia GTX 1080Ti, which could not be done with the batch size of 4096. It is crucial for all experiments to have exactly the same batch size when training for comparable results.
+Batch size was the only hyperparameter that was set differently from the default \textit{transformer\_base}. 
+The reason was we needed to fit all of our models to a single \textit{GPU (graphical processing unit)} NVIDIA GTX 1080 Ti, which could not be done with the batch size of 4096. It is crucial for all experiments to have exactly the same batch size when training for comparable results.
 
 Each variant of the \transformer model also has its own specific hyperparameters that we experimented with, namely:
 
 \begin{itemize}
-    \item \textbf{\transformerrel} - \transformer with relative position \citep{DBLP:conf/naacl/ShawUV18}, which is also our second baseline:
+    \item \textbf{\transformerrel} - \transformer with relative position \citep{DBLP:conf/naacl/ShawUV18}, serves as our second baseline:
         \begin{itemize}
             \item Remove positional encoding.
             \item Maximum relative position = 20, i.e. if two tokens are more than 20 tokens apart, the relative position of this pair is a designated symbol similar to the out-of-vocabulary symbol.
@@ -203,13 +212,13 @@ Each variant of the \transformer model also has its own specific hyperparameters
                 \end{itemize}
             \item Do or do not combine with the relative position.
         \end{itemize}
-    \item \textbf{\DepParse \& \DiagonalParse} - Leveraging the self-attention weights of the \transformer's encoder to jointly translate and parse source sentences:
+    \item \textbf{\DepParse \& \DiagonalParse} - Leveraging self-attention weights of the \transformer's encoder to jointly translate and parse source sentences:
         \begin{itemize}
             \item The layer from which the parse tree is demanded: 0 to 5.
         \end{itemize}
 \end{itemize}
 
-For the preprocessing, the only step needed to be done was to insert a dummy \texttt{<ROOT>} token in the beginning of every sentence, so that the selected self-attention matrix would be able to represent a dependency tree properly.
+For preprocessing, the only step needed to be done was to insert a dummy \texttt{<ROOT>} token at the beginning of every sentence, so that the selected self-attention matrix would be able to represent a dependency tree properly.
 This was only required for the \DepParse model.
 After inference, this \texttt{<ROOT>} token was removed before the evaluation.
 
@@ -228,7 +237,7 @@ To be specific, we report cased BLEU using sacreBLEU,\footnote{\url{https://gith
 In addition, MT-ComparEval \citep{klejch2015mt} was also used to double check the score from sacreBLEU and to compute the statistical significance with bootstrap resampling \citep{koehn2004statistical}.
 
 For the dependency parsing task, unlabeled attachment score (UAS) was employed to evaluate the output parse tree.
-UAS is in fact a precision score that measure the percentage of correct predicted heads.
+UAS is in fact a precision score that measures the percentage of correctly predicted heads.
 The precision is also used to evaluate the diagonal parsing task.
 
 To be able to observe the attention pattern of our models, we utilized the attention visualization notebook\footnote{\url{https://github.com/tensorflow/tensor2tensor/blob/master/tensor2tensor/visualization/TransformerVisualization.ipynb}} in the T2T source code repository.

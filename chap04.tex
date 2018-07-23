@@ -6,8 +6,10 @@
 \chapter{Interpreting Self-Attention as Parse}
 \label{multitask}
 
-In this chapter, we would like to suggest another set of approaches in a multi-task fashion.
-Our proposed approaches attempt to jointly parse the source sentence and translate simultaneously by leveraging the self-attention mechanism in the encoder of the \transformer. \cref{multitask-dep} describes the model that is able to parse the source dependency tree and translate. To examine the real benefit of dependency syntax, we let the model to parse a simple sentence structure instead in \cref{multitask-diagonal}.
+In this chapter, we would like to suggest another set of approaches to multi-task training.
+Our proposed approaches attempt to jointly parse the source sentence and translate simultaneously by leveraging the self-attention mechanism in the encoder of the \transformer.
+\cref{multitask-dep} describes the model that is able to translate and parse the source sentence to produce source dependency tree at the same time.
+To examine the real benefit of dependency syntax, we let the model parse a simple sentence structure instead, see \cref{multitask-diagonal}.
 
 \section{Self-Attention as Dependency Parse}
 \label{multitask-dep}
@@ -17,30 +19,40 @@ Before presenting our proposal in \cref{multitask-dep-parsing}, we would like to
 \subsection{Dependency Parser as Head Selection}
 \label{multitask-dep-dozat}
 
-The graph-based dependency parsers, which were discussed in \cref{the-ling-dep-parse}, strive to ensure a complete tree structure both during training and inference.
-Yet another solution is simpler, which first learns to select the head token of the current token, i.e. head selection, independently.
-After the head selection process, a post-editing process handles the output to hereustically remove any existing cycle to form a proper tree.
+The graph-based dependency parsers, which were discussed in \cref{the-ling-dep-parse}, strive to produce a complete tree structure both during training and inference.
+There are also simpler solutions which learn to select the head token of the current token, i.e. head selection, independently.
+After the head selection process, a post-editing process handles the output to remove any existing cycle to form a proper tree.
 This approach has proven its effectiveness with the neural network model proposed by \cite{dozat:biaffine:2017}.
 
 The model, illustrated in \cref{fig:biaffine-parser}, utilizes two different LSTMs to learn the representation $h^{(arc-dep)}_i$ and $h^{(arc-head)}_i$ for each input $x_i$ independently. This input $x_i$ is a concatenation of the word embedding and POS embedding at position $i$ in the input sentence.
 After that, an operation named \textit{biaffine attention} is employed to produce $S_{ij}$ which is the probability that token $i$ is the head of token $j$:
 
-\[ S_{ij} = biaf(h^{(arc-head)}_i, h^{(arc-dep)}_j) \] where function $biaf$ is a biaffine transformation. All the $S_{ij}$ values form a matrix $S$ which must be column-normalized.
+\begin{equation}
+    S_{ij} = biaf(h^{(arc-head)}_i, h^{(arc-dep)}_j)    
+\end{equation}
+where function $biaf$ is a biaffine transformation. All the $S_{ij}$ values form a matrix $S$ which must be column-normalized.
 It is then compared against the gold parse tree, encoded as an adjacency matrix (\cref{fig:deptree-vs-matrix}).
 
 In the context of neural network, the concept of biaffine transformation can be defined, among the commonly used linear transformation and bilinear transformation, as follows:
 
 \paragraph{Linear transformation} is a function $f$ of one variable $x$ ($n$-dimensional), which can be written as 
 
-$$f(x)=x^\intercal W$$
-
+\begin{equation}
+    f(x)=x^\top W
+\end{equation}
 where $W$ is the parameter of the transformation.
 
-\paragraph{Bilinear transformation} is a function $f$ of two variables $x_1$ and $x_2$ ($n_1$-dimensional and $n_2$-dimensional, respectively), which can be written as $$f(x_1, x_2)=x_1^\intercal W x_2$$
-
+\paragraph{Bilinear transformation} is a function $f$ of two variables $x_1$ and $x_2$ ($n_1$-dimensional and $n_2$-dimensional, respectively), which can be written as 
+\begin{equation}
+    f(x_1, x_2)=x_1^\top W x_2
+\end{equation}
 where $W$ is the parameter of the transformation. For any fixed $x_1$, $f(x_1, x_2)$ is linear in $x_2$ and for any fixed $x_2$, $f(x_1, x_2)$ is linear in $x_1$.
 
-\paragraph{Biaffine transformation} is a function $f$ of two variables $x_1$ and $x_2$ (with dimension of $n_1$ and $n_2$, respectively), which can be written as $$f(x_1, x_2) = x_1^\intercal W_1 x_2 + (x_1\oplus x_2)^\intercal W_2 + b,$$ where $x_1 \oplus x_2 $ is the vector concatenation resulting in an $(n_1+n_2)$-dimensional vector. $W_1, W_2$ and $b$ are parameters with the dimensions of $n_1\times n_2$, $n_1+n_2$ and $1$, in that order.
+\paragraph{Biaffine transformation} is a function $f$ of two variables $x_1$ and $x_2$ (with dimension of $n_1$ and $n_2$, respectively), which can be written as 
+\begin{equation}
+    f(x_1, x_2) = x_1^\top W_1 x_2 + (x_1\oplus x_2)^\top W_2 + b
+\end{equation}
+where $x_1 \oplus x_2 $ is the vector concatenation resulting in an $(n_1+n_2)$-dimensional vector. $W_1, W_2$ and $b$ are parameters with the dimensions of $n_1\times n_2$, $n_1+n_2$ and $1$, in that order.
 
 \begin{figure}[t]
     \includegraphics[width=\textwidth]{img/biaffine-parser.png}
@@ -122,11 +134,12 @@ tectogrammatical layer as defined for the Prague Dependency Treebank,
 \section{Self-Attention as Diagonal Parse}
 \label{multitask-diagonal}
 
-We also would like to conduct an experiment with a simpler sentence structure, which we call the diagonal parse. In a diagonal parse, the dependency head of a token is simply the previous token (\cref{fig:monotree-vs-matrix}).
+For contrast, we conduct an experiment with a simpler sentence structure, which we call the diagonal parse. In a diagonal parse, the dependency head of a token is simply the previous token (\cref{fig:monotree-vs-matrix}).
 
-Our model for the joint diagonal parsing and translation (\DiagonalParse) is identical to the \DepParse model, which has been described in \cref{fig:joint_trans_depparse}. We only need to use the diagonal matrices during training, instead of the dependency matrices.
+Our model for the joint diagonal parsing and translation (\DiagonalParse) is identical to the \DepParse model, which has been described in \cref{fig:joint_trans_depparse}.
+We only need to use diagonal matrices during training, instead of the dependency matrices.
 
-The main goal of this method is to examine whether or not the dependency structure really helps or any syntactic structure can be beneficial, even a very simple one like this diagonal matrix. 
+The main goal of this method is to examine whether or not the dependency structure really helps or any such constraining of the attention matrix can be beneficial, even a very simple one like the diagonal matrix. 
 
 \begin{figure}[t]
     \begin{minipage}[b]{0.50\linewidth}
@@ -163,6 +176,6 @@ The main goal of this method is to examine whether or not the dependency structu
                 }
             \end{tikzpicture}
     \end{minipage}
-    \caption{An example of the diagonal parse and its diagonal matrix (the columns represent the heads, the rows are dependents).}
+    \caption{Dummy dependencies with diagonal matrix (the columns represent the heads, the rows are dependents).}
     \label{fig:monotree-vs-matrix}
 \end{figure}

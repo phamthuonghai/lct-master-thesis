@@ -5,7 +5,7 @@ In this thesis, we proposed several methods to exploit the sentence structure in
 While aiming at the same goal, the previous works focused mostly on the \seq2seq model utilizing RNNs, we explore the state-of-the-art Transformer model which was built entirely on the attention mechanism.
 We speculate that this mechanism makes it easier for us to direct the neural network's behavior with additional syntactic information, e.g. the dependency tree.
 
-We evaluated the models on Czech-to-English and German-to-Czech translations, both in relatively large data setting, against the \transformerbase (positional encoding) and \transformerrel (relative position).
+We evaluated the models on Czech-to-English and German-to-Czech translations, both in relatively large data setting, against \transformerbase (positional encoding) and \transformerrel (relative position).
 
 The first set of methods attempted to enrich the encoder with source-side dependency tree.
 First, we replaced the positional encoding and relative position with our proposed tree distance and tree traversal encoding.
@@ -25,7 +25,7 @@ The models also performed well on parsing tasks.
 \DepParse's best model achieved 91.56 UAS on the auto-generated treebanks, while \DiagonalParse, unsurprisingly, obtained 99.99\% accuracy.
 Furthermore, \DepParse model performance is comparable to the referential parsers that were used to provide the parallel corpus with dependency trees.
 
-It is clear from the results that enriching the \transformer with sentence structure can help.
+To conclude our findings for the two main research questions of this thesis, it is clear from the results that enriching the \transformer with sentence structure can help.
 However, the \transformer model is in fact able to capture this type of linguistic information already on its own and the guidance through multi-task learning is needed only as a small push towards trees following the annotation rules.
 
 

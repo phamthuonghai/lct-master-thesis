@@ -2,23 +2,29 @@
 \label{enriching}
 
 In this chapter, we present our proposals to enrich the encoder.
-In contrast to \citeauthor{sennrich2016linguistic}, we do not simply feed the network with more information, e.g. POS tags or dependency labels, but directly instruct the self-attention mechanism to utilize these types of information. \cref{enriching-structure} discusses the first approach which introduces dependency-related attentional biases to the \transformer. In \cref{enriching-specialized}, we propose a novel specialized attention head guided by syntactic information.
+In contrast to \citeauthor{sennrich2016linguistic}, we do not simply feed the network with more information, e.g. POS tags or dependency labels, but directly instruct the self-attention mechanism to build upon these types of information. \cref{enriching-structure} discusses the first approach which introduces dependency-related attentional biases to the \transformer. In \cref{enriching-specialized}, we propose a novel specialized attention head guided by syntactic information.
 
 \section{Structured Attentional Bias}
 \label{enriching-structure}
 
-In this approach, we make the \transformer model aware of the source sentence structure by introducing bias terms which are similar to the relative position, but based on the dependency tree.
+With this approach, we make the \transformer model aware of the source sentence structure by introducing bias terms which are similar to the relative position, but based on the dependency tree.
 
 \subsection{Relative Position}
 \label{enriching-structure-relative}
 
 Let us recall the formula to compute the attention energy $e_{ij}$ (before the softmax layer to get attention weight $a_{ij}$):
 
-\[ e_{ij}=\frac{1}{\sqrt{d_k}} x_i W^Q (x_j W^K)^\intercal \]
+\begin{equation}
+    e_{ij}=\frac{1}{\sqrt{d_k}} x_i W^Q (x_j W^K)^\top
+\end{equation}
 
-The energy $e_{ij}$ is simply a dot product of the query $q_i=x_i W^Q$ (input $x_i$ projected through $W^Q$) and the key $k_j=x_j W^K$ (input $x_j$ projected through $W^K$) and divided by the square root of the attention hidden size $d_k$. The formula above assumes that the positional encoding has been included in the input. However, this positional encoding are generated from the absolute position of a token within the sentence. \cite{DBLP:conf/naacl/ShawUV18} proposed to impose the encoding of \textit{relative position} in the attention layer instead with a bias term:
+The energy $e_{ij}$ is simply a dot product of the query $q_i=x_i W^Q$ (input $x_i$ projected through $W^Q$) and the key $k_j=x_j W^K$ (input $x_j$ projected through $W^K$) and divided by the square root of the attention hidden size $d_k$.
+The formula above assumes that the positional encoding has been included in the input.
+However, this positional encoding is generated from the absolute position of a token within the sentence. \cite{DBLP:conf/naacl/ShawUV18} proposed to impose the encoding of \textit{relative position} in the attention layer instead by adding a bias term:
 
-\[ e_{ij}=\frac{1}{\sqrt{d_k}} x_i W^Q (x_j W^K + b^K_{ij})^T \]
+\begin{equation}
+    e_{ij}=\frac{1}{\sqrt{d_k}} x_i W^Q (x_j W^K + b^K_{ij})^\top
+\end{equation}
 
 The bias term $b^K_{ij}$ is the embedding vector of the relative position label between token $i$ and $j$. \cref{fig:relative-position-label} illustrates this type of labels between token ``is" and its neighbors in a sample sentence.
 These relative position labels are considered as discrete symbols, whose embeddings can be learned the same way as word embeddings.
@@ -41,21 +47,25 @@ These relative position labels are considered as discrete symbols, whose embeddi
     \label{fig:relative-position-label}
 \end{figure}
 
-Following \citeauthor{DBLP:conf/naacl/ShawUV18}, we also enrich the encoder's attention function by introducing structural biases. Yet instead of the relative position, we would like to use the information from the source-side dependency tree which comes in two forms: tree distance and tree traversal encoding.
+Following \citeauthor{DBLP:conf/naacl/ShawUV18}, we also enrich the encoder's attention function by introducing structural biases.
+Instead of the relative position, we would like to use the information from the source-side dependency tree.
+We experiment with two forms of these labels: tree distance and tree traversal encoding.
 
 \subsection{Tree Distance}
 \label{enriching-structure-treedist}
 
-Our first proposal is the distance between two nodes in a dependency tree, i.e. the number of edges connecting the two said nodes. Our model \TreeDistance utilizes this distance embedding as the bias term $t_{ij}^K$ instead of the relative position bias $b^K_{ij}$, or in a combination of both:
+Our first proposal is the distance between two nodes in a dependency tree, i.e. the number of edges connecting the two nodes. Our model \TreeDistance utilizes this distance embedding as the bias term $t_{ij}^K$ instead of the relative position bias $b^K_{ij}$, or in a combination of both:
 
-\[ e_{ij}=\frac{1}{\sqrt{d_k}} x_i W^Q (x_j W^K + b^K_{ij} + t_{ij}^K)^T \]
+\begin{equation}
+ e_{ij}=\frac{1}{\sqrt{d_k}} x_i W^Q (x_j W^K + b^K_{ij} + t_{ij}^K)^\top
+\end{equation}
 
 \cref{fig:tree-relative-distance} shows how we obtain the tree distance labels from a dependency tree.
 In this example, the distance between \textit{is} and \textit{think} is $1$, because there is one edge connecting them.
 On the other hand, \textit{is} and \textit{a} is two edges apart, so the tree distance label is $2$.
 It is obvious that this tree distance label is symmetrical, i.e. the tree distance between $i$ and $j$ is identical to the tree distance between $j$ and $i$.
 
-To be able to learn the embeddings, the model has to limit the maximum distance to maintain a fixed-size set of these labels. All token pairs that exceed this maximum distance will be assigned a special label, which is similar to the out-of-vocabulary token (\texttt{<OOV>}).
+To be able to learn the embeddings, the model has to limit the maximum distance to maintain a fixed-size set of these labels. All token pairs that exceed this maximum distance are assigned a special label, which is similar to the out-of-vocabulary token (\texttt{<OOV>}).
 
 \begin{figure}[t]
     \centering
@@ -78,7 +88,7 @@ To be able to learn the embeddings, the model has to limit the maximum distance 
         [., edge={->}, edge label={node[midway,fill=white] {3}} [.]]
     ]
     \end{forest}
-    \caption{Example of tree distance labels of token \textit{is} and the other tokens in a dependency tree. The arc label depicts the tree distance from \textit{is} to the node at the tail of the arc.}
+    \caption{Example of tree distance labels of token \textit{is} and the other tokens in a dependency tree. The arc label expresses the tree distance from \textit{is} to the node at the tail of the arc.}
     \label{fig:tree-relative-distance}
 \end{figure}
 
@@ -86,7 +96,8 @@ To be able to learn the embeddings, the model has to limit the maximum distance 
 \label{enriching-structure-treetraversal}
 
 We also expand the simple numerical tree distance above into the tree traversal encoding.
-This encoding does not only denote the distance but the path from a node to another. Our model \TreeTraversal makes use of this encoding the same way the \TreeDistance model utilizes the tree distance label.
+This encoding does not only describe the distance but the path from one node to another.
+Our model \TreeTraversal makes use of this encoding the same way the \TreeDistance model utilizes the tree distance label.
 
 \cref{fig:tree-traversal-encoding} elaborates our idea in a more intuitive way.
 Let us get back to the token \textit{is}, to traverse from \textit{is} to \textit{ROOT}, we need to go up (\textit{U}) twice. 
@@ -115,48 +126,50 @@ This is because the direction of the path from \textit{is} to \textit{ROOT} is d
         [., edge={->}, edge label={node[midway,fill=white] {UUD}} [.]]
     ]
     \end{forest}
-    \caption{Example of tree traversal encodings of token \textit{is} and the other tokens in a dependency tree. The arc label depicts the tree traversal encoding from \textit{is} to the node at the tail of the arc.}
+    \caption{Example of tree traversal encodings of token \textit{is} and the other tokens in a dependency tree. The arc label expresses the tree traversal encoding from \textit{is} to the node at the tail of the arc.}
     \label{fig:tree-traversal-encoding}
 \end{figure}
 
 In addition to the two characters `\textit{U}' (up) and `\textit{D}' (down), we also add two special characters to denote the path from the current node to its siblings: `\textit{L}' for its left siblings and `\textit{R}' for its right siblings.
 In \cref{fig:tree-traversal-encoding}, the traversal encoding from \textit{is} to \textit{I} is ``\textit{L}" instead of ``\textit{UD}", because \textit{I} is the left sibling of \textit{is}.
+Sibling notation takes precedence over `U' and `D' but it is limited to siblings of the current node.
 
 The maximum length of this traversal encoding ($max\_traversal$) is also restricted in order to have a fixed-size vocabulary of the traversal encodings.
 % This restriction allows the model learn the embeddings better.
-Moreover, the size of the vocabulary generated from our tree traversal does not grow exponentially to $max\_traversal$, because all possible encodings can be matched with the following regular expressions:
+Moreover, the size of the vocabulary generated from our tree traversal does not grow exponentially to $max\_traversal$ because the encoding should be of the shortest path between two nodes in the tree. Hence, all possible encodings can be matched with the following regular expressions:
 \begin{itemize}
     \item \textbf{U*D*} : go all the way up (or not) and then down (or not).
     \item \textbf{LD*}      : to the left sibling then down.
     \item \textbf{RD*}      : to the right sibling then down.
 \end{itemize}
 
-There is no reason to go down then up because a shorter encoding with only `D' characters can encode the path.
+There is no reason to go down then up (e.g. ``DDDDUU") because a shorter encoding with only `D' characters can encode this path (``DD").
 
 \section{Specialized Attention Heads}
 \label{enriching-specialized}
 
 In a normal self-attention layer (\cref{lit-trans-att}), the input $x_i$ is projected through three matrices $W^Q, W^K, W^V$ to obtain the corresponding key, query and value vectors.
-The reason for these projections, as having discussed in the previous section, is for the key, query and value to come from various representation subspaces.
+The reason for these projections, as discussed in the previous section, is to allow the key, query and value to come from various representation subspaces.
 
 We hypothesize that it may be beneficial for the model that one of these vectors truly come from a known representation space even before the projection.
 To be specific, at the shallowest layer (layer 0) of the encoder, we propose the value to be projected from the token embedding (as in the standard \transformer), but the key and query should be projected from some linguistic label embeddings, e.g. POS tags or dependency labels.
 
-As illustrated in \cref{fig:specialized-heads}, $x_i$ is solely projected to the value vector $v_i$, while the query $q_i$ and key $k_i$ are obtained by projecting an additional input sequence $l_i$.
-Because the attention is guided by this supplementary information $l_i$, we would like to name it ``specialized attention head".
+As illustrated in \cref{fig:specialized-heads}, the input $x_i$ (token embedding on layer 0) is solely projected to the value vector $v_i$, while the query $q_i$ and key $k_i$ are obtained by projecting an additional input sequence $l_i$ (POS embedding).
+Because the attention is guided by this supplementary information $l_i$, we would like to call it a ``specialized attention head".
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{img/specialized-head.pdf}
-    \caption{Specialized attention head with POS/dependency label embeddings as keys and queries, computing the output $o_3$.}
+    \caption{Specialized attention head with POS tag embeddings as keys and queries, computing the output $o_3$.}
     \label{fig:specialized-heads}
 \end{figure}
 
-In our experiment, we only apply this specialized attention in one head of the shallowest layer in the encoder. In this chosen head, the model will calculate the self-attention weights with keys and queries from one of the following linguistic labels:
+In our experiment, we only apply this specialized attention in one head of the shallowest layer in the encoder.
+In this chosen head, the model will calculate the self-attention weights with keys $k_i$ and queries $q_i$ from one of the following linguistic labels:
 
 \begin{itemize}
-	\item POS embeddings (\SpecPOS)
-    \item Dependency label embeddings (\SpecDep)
+	\item POS embeddings (\SpecPOS, \cref{fig:specialized-heads}).
+    \item Dependency label embeddings (\SpecDep, $l_i$ is dependency label embedding instead).
 \end{itemize}
 
-instead of token embeddings. Hence, the $l_i$ in \cref{fig:specialized-heads} is either POS tag embeddings or dependency label embeddings.
+% instead of token embeddings. Hence, the $l_i$ in \cref{fig:specialized-heads} is either POS tag embeddings or dependency label embeddings.

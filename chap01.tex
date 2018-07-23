@@ -103,18 +103,20 @@ In this section, we discuss several methods to evaluate MT systems, which are di
 \subsection{Manual Evaluation}
 \label{the-eval-manual}
 Evaluating MT systems has remained one of the most important problems in the field.
-Hence, there are many proposed methods, even on how humans should judge the performance of the machine-translated text.
+Hence, there are many proposed methods, even on how humans should judge the performance of machine-translated text.
 Most of the methods simply judge the hypotheses produced by MT systems, treating the systems as black boxes.
 
 A very straightforward evaluation is to directly assess the adequacy and fluency of whole sentences \citep{DBLP:conf/acllaw/GrahamBMZ13}.
-By adequacy, the annotator is expressing to what extent MT adequately captures the meaning of the reference sentence.
+By adequacy, the annotator is expressing to what extent MT captures the meaning of the reference sentence.
+Fluency, on the other hand assesses the grammatical correctness and overall quality of the target sentence regardless the source.
 In Graham, fluency is merely used to break ties in adequacy.
 Another option is to rank full sentences or constituents, i.e. parts of sentences, from several MT systems.
 Yet \cite{DBLP:conf/wmt/BojarEPZ11} showed that it is problematic to interpret this manual ranking.
 
 % Comprehension test: Blind editing+correctness check.
 
-As an alternative, task-based methods evaluate if information from MT output is as useful as the original sentence. Nevertheless, usefulness is also a vague concept and hard to measure.
+As an alternative, task-based methods evaluate if information from MT output is as useful as the original sentence.
+Nevertheless, this usefulness is also a vague concept and it is hard to measure.
 % Therefore, quiz-based evaluation aims to quantify this problem of task-based evaluation in which given machine-translated snippet, evaluator is asked to answer several questions.
 
 % HMEANT: Is the core event structure preserved? HUME
@@ -141,7 +143,7 @@ With these properties, the proposed metric can be used to check progress, allow 
 The \textit{BLEU} metric (Bilingual Evaluation Understudy, \cite{BLEU}) is one of these automatic evaluation metrics, which is widely used in the field of MT.
 It evaluates an output (sentence or corpus) of an MT system (the candidate) by comparing it with correct translations (the references).
 
-The two main factors of BLEU are the n-grams precisions and length of the candidate.
+The two main components of BLEU are the n-grams precisions and length of the candidate.
 Precision is very commonly used in the machine learning field.
 In the case of BLEU, it measures the percentage of correct n-grams in the candidate.
 The trivial case is unigram ($n=1$) precision which is merely the ratio of the number of tokens shared between candidate and reference divided by the number of tokens in the candidate.
@@ -149,25 +151,26 @@ However, this simple definition of precision would not be very precise in some c
 
 \bigskip
 
-\textbf{Candidate}: That \underline{that} \underline{that}
+\textbf{Candidate}: \underline{that} \underline{that} that
 
 \textbf{Reference}: I think \underline{that} it is not \underline{that} bad
 
 \bigskip
 
-The unigram precision of the above example is 1.0 (100\%), even though only two \textit{that} unigrams in the candidate are matched with the two unigrams in the reference.
-That is to say, the number of n-grams shared between candidate and reference should be clipped.
-The value to use for clipping is the number of n-grams that appear in the reference. 
+The straightforward (lowercase) unigram precision of the above example is 1.0 (100\%), even though only two \textit{that} unigrams in the candidate are matched with the two unigrams in the reference.
+That is to say, the number of n-grams shared between the candidate and the reference should be clipped to the number of n-grams that appear in the reference. 
 Having that modification, the \textit{modified n-gram precision} in BLEU is computed as follows:
 
-\[ p_n=\frac{\sum_{C\in\{Candidates\}}\sum_{n-gram\in C}Count_{clip}(n-gram)}{\sum_{C'\in\{Candidates\}}\sum_{n-gram'\in C'}Count(n-gram')} \]
+\begin{equation}
+    p_n=\frac{\sum_{C\in\{Candidates\}}\sum_{n-gram\in C}Count_{clip}(n-gram)}{\sum_{C'\in\{Candidates\}}\sum_{n-gram'\in C'}Count(n-gram')}
+\end{equation}
 
 The second problem BLEU has to deal with is erroneously short candidates.
 Take the following example:
 
 \bigskip
 
-\textbf{Candidate}: That
+\textbf{Candidate}: that
 
 \textbf{Reference}: I think \underline{that} it is not \underline{that} bad
 
@@ -176,10 +179,12 @@ Take the following example:
 Although the candidate definitely does not express enough information compared to the reference, the precision of this case is $1.0$.
 To penalize such output from MT systems, BLEU introduced the \textit{brevity penalty} where $c$ and $r$ are the length of the candidate and the length of the reference, respectively.
 
-\[BP=\begin{cases} 1 & \mbox{if } c>r \\ e^{(1-r/c)} & \mbox{if } c\le r \end{cases}\]
+\begin{equation}
+    BP=\begin{cases} 1 & \mbox{if } c>r \\ e^{(1-r/c)} & \mbox{if } c\le r \end{cases}
+\end{equation}
 
 When there are more than one reference, $r$ is called the \textit{effective reference length} and it is taken as the length of the reference that is closest to the length of the candidate.
-It is important to note that, in the example below, which reference is the closest varies between implementations of BLEU. Both references' lengths are one token different than the candidate.
+It is important to note that which reference is the closest varies between implementations of BLEU, see the example below. Both references' lengths are one token different away from the candidate.
 
 \bigskip
 
@@ -193,14 +198,16 @@ It is important to note that, in the example below, which reference is the close
 
 We advise the reader to use the official BLEU evaluation script used by the Workshop of Machine Translation (WMT) shared task,\footnote{\url{ftp://jaguar.ncsl.nist.gov/mt/resources/mteval-v13a.pl}} or its Python reimplementation.\footnote{\url{https://github.com/mjpost/sacreBLEU}}
 
-Combining those two main factors, the BLEU score is defined as follows:
+Combining those two main components, the BLEU score is defined as follows:
 
-\[BLEU=BP\cdot exp\left( \sum_{n=1}^{N} w_n \log p_n \right)\]
+\begin{equation}
+    BLEU=BP\cdot exp\left( \sum_{n=1}^{N} w_n \log p_n \right)
+\end{equation}
 
 Specifically, BLEU computes the n-grams precisions $p_n$ of the given candidate and references (by default from unigrams to 4-grams).
-It then geometrically averages them with predefined weights $w_n$, and scales down the score in the case of inadequately short candidates with the brevity penalty.
+It then geometrically averages them with predefined weights $w_n$ (all set to $1/4$ by default), and scales down the score in the case of inadequately short candidates with the brevity penalty.
 
-Experimental results showed that BLEU is highly correlated with human evaluators if several reference translations are used and the BLEU scores are sufficiently high.
+Experimental results showed that BLEU is highly correlated with human evaluators if several reference translations are used and the BLEU scores are sufficiently high \citep{bojar2010tackling}.
 However, BLEU is overly sensitive to word forms and sequences of tokens.
 There are several proposals to mitigate this, such as using:
 
@@ -215,15 +222,15 @@ There are several proposals to mitigate this, such as using:
 \label{the-ling}
 
 In this section, we would like to introduce two types of linguistic information that our proposed methods exploit to enhance the translation performance.
-\cref{the-ling-dep} discusses the concept of dependency syntax, while \cref{the-ling-pos} reviews various POS tagging systems across languages.
+\cref{the-ling-dep} discusses the concept of dependency grammar, while \cref{the-ling-pos} reviews various POS tagging systems across languages.
 
 \subsection{Dependency Grammar}
 \label{the-ling-dep}
 
-The so-called \textit{dependency grammar} is in fact not a single consistently established grammar, but a wide range of variants that share several basic assumptions.
+The so-called \textit{dependency grammar} is in fact not a single consistently established grammar but a wide range of variants that share several basic assumptions.
 The primary underlying idea is a syntactic structure which consists of lexical items, connected by binary asymmetric relations. 
 These relations are called dependencies. 
-Although it is said that this concept has been used early in Panini’s work for Sanskrit grammar around the 6\textsuperscript{th} to 4\textsuperscript{th} century BCE, one can consider the starting point as when it was introduced systematically by \cite{lucien1959elements}. 
+Although it is said that this concept has been used early in Panini’s work for Sanskrit grammar around the 6\textsuperscript{th} to 4\textsuperscript{th} century BCE, its systematic introduction is due to \cite{lucien1959elements}. 
 The two nodes involved in this type of relation are called \textit{head} (\textit{governor})  and \textit{dependent} (\textit{subordinate}).
 
 \begin{figure}
@@ -276,14 +283,14 @@ The two nodes involved in this type of relation are called \textit{head} (\texti
     \label{fig:dependency_tree}
 \end{figure}
 
-In order to visualize these relations in a sentence, a tree-like structure named dependency tree is used.
-Aside from dependency tree, another common tree-like structure used in describing grammar of the sentence is the phrase-structure tree.
+In order to visualize these relations in a sentence, a tree-like structure named \textit{dependency tree} is used.
+Aside from dependency tree, another common tree-like structure used in describing the grammar of the sentence is the phrase-structure tree.
 
-\cref{fig:phrase_structure_tree,fig:dependency_tree} present an example of phrase-structure and dependency tree, respectively.
-While the phrase-structure tree represents phrases (as non-terminal nodes) with their structural categories, the dependency tree depicts the head-dependant relations (with directed arcs) between its lexical items.
+\cref{fig:phrase_structure_tree,fig:dependency_tree} present an example of a phrase-structure and a dependency tree, respectively.
+While the phrase-structure tree represents phrases (as non-terminal nodes) with their structural categories, the dependency tree depicts the head-dependent relations (with directed arcs) between its lexical items.
 \cref{fig:dependency_tree_label} also introduces a dependency tree with arc labels, known as \textit{dependency labels}, which specify the functional relation that holds between each pair of lexical items.
 
-In the examples, the noun \textit{elephant} is the dependent of the verb \textit{shot} and the nature of the dependency relation is specified by the label, which indicates that \textit{elephant} is the object of \textit{shot} (\cref{fig:dependency_tree_label}), whereas the phrase-structure tree has a slightly different analysis.
+In the examples, the noun \textit{elephant} is the dependent of the verb \textit{shot} and the nature of the dependency relation is specified by the label, which indicates that \textit{elephant} is the object of \textit{shot} (\cref{fig:dependency_tree_label}). The phrase-structure tree has a slightly different analysis.
 On the 4\textsuperscript{th} level of the tree (\cref{fig:phrase_structure_tree}), the prepositional phrase (PP) is comprised of a preposition (P) and a noun phrase (NP), spanning over the phrase \textit{``in my pajamas"} of the sentence.
 
 \begin{figure}[t]
@@ -304,14 +311,15 @@ On the 4\textsuperscript{th} level of the tree (\cref{fig:phrase_structure_tree}
     \label{fig:dependency_tree_label}
 \end{figure}
 
-It should also be pointed out that the convention of attaching a dependent to which head, and with which dependency label varies between treebanks. For example, the Universal Dependency 2.0 (UD 2.0, \cite{UD20}) has a different set of labels and sometimes different ways to attach a certain token to its head, than the Prague Dependency Treebanks (PDT, \cite{pdt20:2006}).
+It should also be pointed out that the convention which two nodes are related, which of them is marked as the dependent and which as the head, and what is the dependency label sometimes varies between treebanks.
+For example, the Universal Dependencies 2.0 (UD 2.0, \cite{UD20}) has a different set of labels and sometimes different ways to attach a certain token to its head, than the Prague Dependency Treebanks (PDT, \cite{pdt20:2006}).
 
 \subsubsection{Dependency Parsing}
 \label{the-ling-dep-parse}
 \textit{Dependency parsing} is a syntactic analysis of lexical items focused on finding the dependency relation between tokens in a sentence.
-In other words, dependency parsing is the process that takes a sentence as input, then outputs the dependency tree discussed in the previous section.
-A dependency parser can be built using a set of predefined rules or by learning from data.
-The dataset that a parser learns from is named \textit{treebank}.
+In other words, dependency parsing is the process that takes a sentence as the input and outputs the dependency tree discussed in the previous section.
+The dependency parser can be built using a set of predefined rules or by learning from data.
+The dataset that a parser learns from is called a \textit{treebank}.
 Data-driven dependency parsing has two prominent approaches: \textit{transition-based} or \textit{graph-based parsing}.
 
 The transition-based parsing maintains a so-called \textit{configuration}. Then, it uses an \textit{oracle} to decide an action, e.g. whether to attach a token to another token, or to change the current configuration. A configuration in a stack-based shift-reduce parser includes:
@@ -322,29 +330,30 @@ The transition-based parsing maintains a so-called \textit{configuration}. Then,
     \item A \textit{set of dependency relations} where each member is an edge in the final parse tree.
 \end{itemize}
 
-The oracle of a transition-based parser is actually a classifier, which can be built with any data-driven approach that can solve a classification problem, for example neural network \citep{chen2014fast}.
+The oracle of a transition-based parser is actually a classifier, which can be built with any data-driven approach that can solve a classification problem, for example a neural network \citep{chen2014fast}.
 The input of this classifier includes several features extracted from the configuration, while the output is an action from a set of possible actions.
 \citeauthor{chen2014fast} proposed a rich set of features including word form, POS tags and currently known arc labels of the top 3 tokens in the stack and the buffer, and also selected children of these tokens.
-Hence, the main and only component of a transition-based parser that needs to be trained is in fact its oracle.
+The main and only component of a transition-based parser that needs to be trained is the oracle.
 
-
-Compared to transition-base parsing, graph-based parsing is a more direct approach.
-Basically, it transforms the problem of dependency parsing to finding the maximum spanning tree in a completed graph.
-First of all, a graph-based parser considers all tokens in a sentence as connected in a complete graph.
-Utilizing the linguistic information of the tokens, e.g. word forms, lemmas, part-of-speech tags (\cref{the-ling-pos}), etc., the parser predicts the weight of all directed edge $(u,v)$, which indicates the likelihood that token $u$ is the head of token $v$.
-The parser then finds a maximum spanning tree from the graph based on the computed probabilities.
+Compared to transition-based parsing, graph-based parsing is a more direct approach.
+Basically, it transforms the problem of dependency parsing to finding the maximum spanning tree in a connected graph.
+First of all, a graph-based parser considers all tokens in the sentence as a complete graph.
+Utilizing the linguistic information of the tokens, e.g. word forms, lemmas, part-of-speech tags (\cref{the-ling-pos}), etc., the parser predicts the weight of each possible directed edge $(u,v)$, which indicates the likelihood that token $u$ is the head of token $v$.
+The parser then finds the maximum spanning tree from the graph based on the computed probabilities.
 This maximum spanning tree is the optimal parse tree of the input sentence.
 
-The task of assigning dependency label to each dependency relation (\textit{dependency tagging}) may be performed during the parsing process or after having obtained the dependency tree. Nevertheless, we will not elaborate on this task, which is of limited relevance to the present thesis.
+The task of assigning a dependency label to each dependency relation (\textit{dependency tagging}) may be performed during the parsing process or after having obtained the dependency tree. Nevertheless, we will not elaborate on this task, which is of limited relevance to the present thesis.
 
-\subsection{Part of Speech}
+\subsection{Part-of-Speech Tagging}
 \label{the-ling-pos}
 
-By definition, a \textit{part of speech (POS)} is a category of words that have similar grammatical properties. If two words are assigned the same POS tag, they have similar grammatical functions in the structure of sentences.
+By definition, a \textit{part of speech (POS)} is a category of words that have similar grammatical properties.
+If two words are assigned the same POS tag, they have similar grammatical functions in the structure of sentences.
 
-It is important to note that the set of POS tags varies among languages. For example, Vietnamese has the tag of nominal classifiers, which English does not. For English, the POS tags in the Penn treebank project \citep{Marcus93buildinga} is commonly used (\cref{tab:penn-pos}).
+It is important to note that the set of POS tags varies among languages. For example, Vietnamese has the tag of nominal classifiers, which English does not. For English, the POS tags from the Penn treebank project \citep{Marcus93buildinga} are commonly used (\cref{tab:penn-pos}).
 
 \begin{table}[t]
+\small
 \centering
 \begin{tabular}{| l | l | l |} 
 \hline
@@ -392,9 +401,13 @@ It is important to note that the set of POS tags varies among languages. For exa
 \label{tab:penn-pos}
 \end{table}
 
-On the other hand, this type of fixed POS tags set is arguably not sufficient for morphologically rich languages such as Czech. In the Czech language, a system of morphological tags are used. Each morphological tag is not a member of a predefined set, but an encoded sequence. This sequence consists of 15 characters whose functions are described in \cref{tab:czech-pos}.
+On the other hand, this small POS tag set is arguably not sufficient for morphologically rich languages such as Czech. 
+In the Czech language, a complex system of morphological tags is used.
+Each morphological tag is an encoded sequence.
+This sequence consists of 15 characters whose functions are described in \cref{tab:czech-pos}.
 
 \begin{table}[t]
+\small
 \centering
 \begin{tabular}{| l | l | l |} 
 \hline
@@ -421,7 +434,8 @@ On the other hand, this type of fixed POS tags set is arguably not sufficient fo
 \label{tab:czech-pos}
 \end{table}
 
-The very first position denotes 10 basic POS tags (\cref{tab:czech-pos1}), while the second position adds more detail about the POS tags. Hence, the first two characters of a morphological tag can be considered equivalent to the POS tag in the Penn treebank.
+The very first position denotes 10 basic POS tags (\cref{tab:czech-pos1}), while the second position adds more details about the POS tags.
+Hence, the first two characters of a morphological tag can be considered equivalent to the POS tag in the Penn treebank.
 
 For example, the morphological tag of \textit{rezignoval} in the sentence ``\textit{Myslíš, že tě požádají, abys \underline{rezignoval}?}" is \texttt{VpYS---XR-AA---}, which means:
 \begin{itemize}
@@ -433,10 +447,11 @@ For example, the morphological tag of \textit{rezignoval} in the sentence ``\tex
     \item R: past tense.
     \item A: affirmative (not negated).
     \item A: active voice.
-    \item The hyphen (-) indicates that information at that position is not available.
+    \item The hyphen (-) indicates that information at that position is not applicable.
 \end{itemize}
 
 \begin{table}[t]
+\small
 \centering
 \begin{tabular}{| l | l |} 
 \hline
