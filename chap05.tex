@@ -153,7 +153,7 @@ The CoNLL-U format has ten columns:
 Experiments in this thesis were carried out with Tensor2Tensor\footnote{\url{https://github.com/tensorflow/tensor2tensor}} (T2T) version 1.5.6 at the
 \emph{word level}, i.e. without using subword units \citep{sennrich2015neural}.
 We decided for this simplification for an easier alignment between the translation and parsing tasks.
-Because of operating on the word level, we limited the vocabulary size to be 500,000 tokens for each language.
+Because of operating on the word level, we limited the vocabulary size to be 50,000 tokens for each language.
 
 The \transformer's hyperparameter set \textit{transformer\_base} \citep{TrainingTipsfortheTransformerModel} was used as default for all model variants.
 From now on, we refer this to be one of the baseline model, named \transformerbase. To be specific, some important hyperparameters in this setting are:
