@@ -1,5 +1,5 @@
-\chapter*{Conclusion}
-\addcontentsline{toc}{chapter}{Conclusion}
+\chapter{Conclusion}
+% \addcontentsline{toc}{chapter}{Conclusion}
 
 In this thesis, we proposed several methods to exploit the sentence structure in NMT by manipulation of the attention mechanism.
 While aiming at the same goal, the previous works focused mostly on the \seq2seq model utilizing RNNs, we explore the state-of-the-art Transformer model which was built entirely on the attention mechanism.
@@ -7,7 +7,7 @@ We speculate that this mechanism makes it easier for us to direct the neural net
 
 We evaluated the models on Czech-to-English and German-to-Czech translations, both in relatively large data setting, against \transformerbase (positional encoding) and \transformerrel (relative position).
 
-The first set of methods attempted to enrich the encoder with source-side dependency tree.
+To answer our first research question, the first set of methods attempted to enrich the encoder with source-side dependency trees.
 First, we replaced the positional encoding and relative position with our proposed tree distance and tree traversal encoding.
 BLEU scores of these models showed no improvement over the baselines.
 However, combining our proposals with the baselines reported +0.5 to +0.8 BLEU against both baselines.
@@ -18,16 +18,15 @@ The difference between this and the standard attention layer is that the key and
 The specialized POS head did not bring any improvement over baselines.
 On the other hand, specialized dependency head brought +0.95 to +1.06 compared against the baselines without this modification.
 
-We further invented a novel component of the Transformer model for sentence structure parsing by promoting the interpretation of self-attention as dependency syntax, and showed that the Transformer model can be used as a precise parser.
-As suggested by the results, constraining self-attention to both true dependency as well as a simple diagonal matrix helped translation task at insignificant extra cost.
+For the second research question, we further invented a novel component of the Transformer model for sentence structure parsing by promoting the interpretation of self-attention as dependency syntax, and showed that the Transformer model can be used as a precise parser.
+As suggested by the results, constraining self-attention to both true dependency as well as a simple diagonal matrix helped the translation task at insignificant extra cost.
 The best model of \DepParse and \DiagonalParse achieved +1.35 and +1.48 BLEU improvements, respectively. 
 The models also performed well on parsing tasks.
 \DepParse's best model achieved 91.56 UAS on the auto-generated treebanks, while \DiagonalParse, unsurprisingly, obtained 99.99\% accuracy.
-Furthermore, \DepParse model performance is comparable to the referential parsers that were used to provide the parallel corpus with dependency trees.
+Furthermore, the performance of the \DepParse model is comparable to the referential parsers that were used to provide the parallel corpus with dependency trees.
 
-To conclude our findings for the two main research questions of this thesis, it is clear from the results that enriching the \transformer with sentence structure can help.
-However, the \transformer model is in fact able to capture this type of linguistic information already on its own and the guidance through multi-task learning is needed only as a small push towards trees following the annotation rules.
-
+To conclude our findings for the two main research questions of this thesis, it is clear from the results that enriching the \transformer with sentence structure can help (1).
+However, the \transformer model is in fact able to capture this type of linguistic information already on its own and the guidance through multi-task learning is needed only as a small push towards trees following the annotation rules (2).
 
 % Future works
 

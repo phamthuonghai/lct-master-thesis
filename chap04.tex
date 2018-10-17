@@ -8,8 +8,10 @@
 
 In this chapter, we would like to suggest another set of approaches to multi-task training.
 Our proposed approaches attempt to jointly parse the source sentence and translate simultaneously by leveraging the self-attention mechanism in the encoder of the \transformer.
+Hence, the model itself can leverage the sentence structure information when translating, and make use of knowledge from translation task during parsing.
+
 \cref{multitask-dep} describes the model that is able to translate and parse the source sentence to produce source dependency tree at the same time.
-To examine the real benefit of dependency syntax, we let the model parse a simple sentence structure instead, see \cref{multitask-diagonal}.
+To examine whether the dependency syntax truly helps translation, we let the model parse a simple sentence structure instead, see \cref{multitask-diagonal}.
 
 \section{Self-Attention as Dependency Parse}
 \label{multitask-dep}
@@ -33,7 +35,7 @@ After that, an operation named \textit{biaffine attention} is employed to produc
 where function $biaf$ is a biaffine transformation. All the $S_{ij}$ values form a matrix $S$ which must be column-normalized.
 It is then compared against the gold parse tree, encoded as an adjacency matrix (\cref{fig:deptree-vs-matrix}).
 
-In the context of neural network, the concept of biaffine transformation can be defined, among the commonly used linear transformation and bilinear transformation, as follows:
+In the context of neural networks, the concept of biaffine transformation can be defined, among the commonly used linear transformation and bilinear transformation, as follows:
 
 \paragraph{Linear transformation} is a function $f$ of one variable $x$ ($n$-dimensional), which can be written as 
 
@@ -56,7 +58,7 @@ where $x_1 \oplus x_2 $ is the vector concatenation resulting in an $(n_1+n_2)$-
 
 \begin{figure}[t]
     \includegraphics[width=\textwidth]{img/biaffine-parser.png}
-    \caption{Neural dependency parser with deep biaffine attention (adapted from \cite{dozat:biaffine:2017})}
+    \caption{Neural dependency parser with deep biaffine attention (reproduced from \cite{dozat:biaffine:2017})}
     \label{fig:biaffine-parser}
 \end{figure}
 
@@ -103,7 +105,7 @@ where $x_1 \oplus x_2 $ is the vector concatenation resulting in an $(n_1+n_2)$-
 \label{multitask-dep-parsing}
 
 The construction of the $S$ matrix above is very similar to the matrix of self-attention weights $a_{ij}$ in the \transformer model.
-From this similarity, we speculate that the self-attentive architecture of \transformer NMT may have the capacity to learn dependency parsing and we only need to promote a little the particular linguistic dependencies captured in a treebank. Hence, we could attempt to simulate this parsing model with the self-attention layer in the \transformer model.
+From this similarity, we speculate that the self-attentive architecture of \transformer NMT may have the capacity to learn dependency parsing and we only need to mildly promote the particular linguistic dependencies captured in a treebank. Hence, we could attempt to simulate this parsing model with the self-attention layer in the \transformer model.
 
 \begin{figure}[t]
     \includegraphics[width=\textwidth]{img/Joint_Translation_DepParse}
@@ -134,10 +136,10 @@ tectogrammatical layer as defined for the Prague Dependency Treebank,
 \section{Self-Attention as Diagonal Parse}
 \label{multitask-diagonal}
 
-For contrast, we conduct an experiment with a simpler sentence structure, which we call the diagonal parse. In a diagonal parse, the dependency head of a token is simply the previous token (\cref{fig:monotree-vs-matrix}).
+For contrast, we conduct an experiment with a simpler sentence structure, which we call the diagonal parse (dummy dependency parse). In a diagonal parse, the dependency head of a token is simply the previous token (\cref{fig:monotree-vs-matrix}).
 
 Our model for the joint diagonal parsing and translation (\DiagonalParse) is identical to the \DepParse model, which has been described in \cref{fig:joint_trans_depparse}.
-We only need to use diagonal matrices during training, instead of the dependency matrices.
+For this dummy parsing task, we only need to use diagonal matrices during training instead of the dependency matrices.
 
 The main goal of this method is to examine whether or not the dependency structure really helps or any such constraining of the attention matrix can be beneficial, even a very simple one like the diagonal matrix. 
 

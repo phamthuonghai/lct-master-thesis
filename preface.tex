@@ -8,7 +8,7 @@ To achieve this result, most NMT models highly rely on the attention mechanism \
 
 The dependence of NMT models on the attention mechanism is further streng-thened in the \transformer model \citep{DBLP:conf/nips/VaswaniSPUJGKP17}.
 This model gets rid of the recurrent neural network (RNN), and replaces it with self-attention layers.
-It was claimed that this self-attention mechanism can capture some linguistic structures and phenomena.
+It has been claimed that this self-attention mechanism can capture some linguistic structures and phenomena.
 
 Although \cite{DBLP:conf/acl/BelinkovDDSG17} and \cite{DBLP:conf/emnlp/ShiPK16} analyzed the amount of linguistic information (POS tags and syntax, respectively) NMT systems could capture, their analyses only applied to systems without attention mechanism.
 More notably, \cite{DBLP:conf/ijcnlp/GhaderM17} examined the similarities and differences between attention and alignment matrix.
@@ -26,8 +26,9 @@ This thesis aims to fill the gap and examine the relation between linguistic str
 Apart from this introduction, the thesis is organized into six chapters:
 
 \paragraph{Chapter 1} briefly introduces the theoretical background regarding machine translation and several forms of linguistic information.
-\paragraph{Chapter 2} reviews the previous related works that our methods are built upon.
-\paragraph{Chapter 3} presents our first set of attempts to improve the \transformer's model by enriching the encoder's self-attention with information about the source sentence structure.
+\paragraph{Chapter 2} reviews the previous related work that our methods are built upon.
+\paragraph{Chapter 3} presents our first set of attempts to improve the \transformer model by enriching the encoder's self-attention with information about the source sentence structure.
 \paragraph{Chapter 4} proposes our joint translating and parsing model by promoting the interpretation of the self-attention layers in the encoder.
 \paragraph{Chapter 5} presents the datasets that are used to evaluate our approaches and details about our experimental systems.
 \paragraph{Chapter 6} reports the results of our experiments and further analyzes the training time and the behavior of the neural network.
+\paragraph{Chapter 7} concludes our findings and discusses future work.

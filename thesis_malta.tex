@@ -122,13 +122,13 @@ dg edges/.style={for tree={parent anchor=south, child anchor=north,align=center,
 % Abstract (recommended length around 80-200 words; this is not a copy of your thesis assignment!)
 \def\Abstract{%
 Neural machine translation has been lately established as the new state of the art in machine translation, especially with the Transformer model.
-This model emphasized the importance of self-attention mechanism and suggested that it could capture some linguistic phenomena.
-However, this claim has not been examined thoroughly, so we propose two main groups of methods to examine the relation between these two.
+This model emphasizes the importance of the self-attention mechanism and suggests that it can capture some linguistic phenomena.
+However, this claim has not been examined thoroughly, so we propose two main groups of methods to examine the relation between the self-attention layer and the ability to capture linguistic information.
 Our methods aim to improve the translation performance by directly manipulating the self-attention layer.
 The first group focuses on enriching the encoder with source-side syntax with tree-related position embeddings or our novel specialized attention heads.
 The second group is a joint translation and parsing model leveraging self-attention weight for the parsing task.
-It is clear from the results that enriching the \transformer with sentence structure can help.
-More importantly, the \transformer model is in fact able to capture this type of linguistic information with guidance in the context of multi-task learning at nearly no increase in training costs.
+It is clear from the results that enriching the \transformer with sentence structure can help (1).
+More importantly, the \transformer model is in fact able to capture this type of linguistic information with guidance in the context of multi-task learning at nearly no increase in training costs (2).
 }
 
 % 3 to 5 keywords (recommended), each enclosed in curly braces

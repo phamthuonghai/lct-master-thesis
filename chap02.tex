@@ -1,7 +1,7 @@
 \chapter{Literature Review}
 \label{lit}
 
-Recent attempts to incorporate linguistic information, especially syntactic information, to NMT systems can be roughly classified into two main categories: enriching the encoder or decoder and multi-task learning.
+Recent attempts to incorporate linguistic information, especially syntactic information, into NMT systems can be roughly classified into two main categories: enriching the encoder or decoder and multi-task learning.
 
 This chapter is divided into three sections: the first two \cref{lit-enc,lit-mult} discuss the two main categories mentioned above, and \cref{lit-trans} is dedicated to a more detailed review of our baseline, the \transformer model.
 
@@ -24,7 +24,7 @@ Hence, the encoder is explicitly aware of the syntactic tree and learns the cont
 \begin{figure}[t]
     \centering
     \includegraphics[width=0.7\linewidth]{img/tree-lstm.png}
-    \caption{Standard LSTM (top) and tree-LSTM (bottom) (adapted from \cite{DBLP:conf/acl/TaiSM15})}
+    \caption{Standard LSTM (top) and tree-LSTM (bottom) (reproduced from \cite{DBLP:conf/acl/TaiSM15})}
     \label{fig:tree-lstm}
 \end{figure}
 
@@ -34,7 +34,7 @@ The proposed attention is analogous to Luong's local attention.
 The only difference is how the distance between two words in the source sentence is computed.
 In Chen's syntax-directed attention, the distance is the minimum number of edges to be traversed to reach one node from another in the dependency tree, in Luong's, it is the sequential distance.
 
-In a simpler way, \cite{DBLP:conf/acl/LiXTZZZ17} proposed to incorporate a sequence of structural label (POS tags) to the encoder's attention by feeding these tags to an RNN.
+In a simpler way, \cite{DBLP:conf/acl/LiXTZZZ17} proposed to incorporate a sequence of structural labels (POS tags) to the encoder's attention by feeding these tags to an RNN.
 While not actually focusing on enhancing the encoder, \cite{DBLP:conf/naacl/CohnHVYDH16} introduced structural biases to the encoder-decoder attention function.
 These biases include the relative position between the target and source tokens, fertility, Markov condition and bilingual symmetry.
 Using this approach, researchers enabled the decoder to attend better to hidden states of the encoder.
@@ -56,7 +56,7 @@ The evidence presented in these papers suggests that there is improvement on the
 The performance in the secondary task, i.e. parsing, is however not reported.
 Going in the opposite direction, \citet{DBLP:conf/emnlp/ShiPK16} have done an in-depth analysis to further examine the usefulness of NMT model for the purposes of syntactic parsing. Their work pointed out which types of syntactic relations/labels were better predicted by the \seq2seq MT model.
 
-Aiming to improve both tasks, \cite{tran2018inducing} used two different components in the encoder, one to produce the content and the other to produce the dependency matrix.
+Aiming to improve both tasks, \cite{tran2018inducing} used two different components in the encoder, one to produce the translation content and the other to produce the dependency matrix to help with the structure of the content.
 While the content is the output of the standard bidirectional LSTM as in the vanilla \seq2seq model, the dependency matrix is produced by a head word selection layer, which is modelled by self-attention (\cref{lit-trans-pos}).
 Then both are fed to the decoder using a modified encoder-decoder attentional layer.
 In fact, this model is enriching the decoder while still learning to do multi-tasking.
@@ -68,7 +68,8 @@ The reason is that the parser itself is a neural network or another sufficiently
 In other words, a good performance of these multi-task NMT systems in parsing confirms only that the information available to the parsing component preserves sufficient details to create the parse, not that the NMT actually employs syntactic information.
 Therefore, one cannot answer our second research question even if the joint model performs perfectly in parsing.
 
-In summary, the evidence presented in the literature suggests that various methods to feed syntactic information to NMT helped translation. However, little is known about whether or not NMT already captures syntactic information within the model itself, which is one of the two main questions we attempt to answer with our proposals in the following sections.
+In summary, the evidence presented in the literature suggests that various methods to feed syntactic information to NMT helped translation.
+However, little is known about whether or not NMT already captures syntactic information within the model itself, which is one of the two main questions we attempt to answer with our proposals in the following sections.
 
 \section{The \transformer Model}
 \label{lit-trans}
@@ -87,8 +88,8 @@ These self-attention layers were introduced by \cite{cheng-dong-lapata:2016:EMNL
 They have been used in natural language inference, sentiment analysis and language modelling.
 The \textit{intra-} or \textit{self-} prefixes suggest that this attention mechanism works within the input sentence, instead of between encoder and decoder as in \cref{the-mt-att}. Although the procedures to compute these two types of attention are similar, the attention layer in \transformer has to perform an additional projection step. 
 
-\cref{fig:self-att-layer} presents an example of one attention layer in the \transformer.
-The attention in \transformer builds upon the notion of \textit{keys}, \textit{values} and a \textit{query} defined by the following steps:
+\cref{fig:self-att-layer} presents an example of one attention layer in the \transformer model.
+The attention in this model builds upon the notion of \textit{keys}, \textit{values} and a \textit{query} defined by the following steps:
 \begin{enumerate}
     \item Project the input $x_i$ to key $k_i, \text{ value } v_i, \text{ and query } q_i$ using projection matrices $W^K, W^V, W^Q$, respectively.
     \item Compute the attention energy $e_{i,j}$ as the dot product of query $q_i$ and key $k_j$, divided by the square root of the key's dimension $d_k$.
@@ -123,7 +124,7 @@ The outputs of all $h$ attentions are concatenated, then projected through a lin
 \begin{figure}[t]
     \centering
     \includegraphics[width=0.5\linewidth]{img/multihead-attention.png}
-    \caption{Multi-head attention layer (adapted from \cite{DBLP:conf/nips/VaswaniSPUJGKP17}).}
+    \caption{Multi-head attention layer (reproduced from \cite{DBLP:conf/nips/VaswaniSPUJGKP17}).}
     \label{fig:multihead-attention-layer}
 \end{figure}
 
@@ -131,7 +132,7 @@ This multi-head attention enhances the ability of attention mechanism in two way
 \begin{itemize}
     \item It makes it possible for the model to attend to various types of information at different positions. Although the attention is able to focus on several positions at one layer, multi-head attention can enable the model to attend to different patterns, and various positions in each patterns.
     For example, a noun in a sentence can attend to all related adjectives in the first attention head. In addition, it can also attend to the pronouns referring to it in the second head.
-    \item The multi-head attention also allows the keys, queries and values to come from multiple representation subspaces, because of different projection matrices $W^K, W^Q, W^V$ in each head.
+    \item The multi-head attention also allows the keys, queries and values to come from multiple representation subspaces, because of different projection matrices $W^K, W^Q, W^V$ in each head. This is a crucial step because input from each word is merely a single vector, this vector must be projected through different matrices to play different roles (key, query and value) in the attention layer.
 \end{itemize}
 
 \subsection{Positional Encoding}
@@ -157,6 +158,7 @@ in which $d$ is the dimension of the embedding vector.
 \end{figure}
 
 \cref{fig:positional-embedding} shows the values of the generated positional embeddings (dimension of 512) for token positions ranging from 1 to 150.
+There is an observable pattern when the position is increasing within the sentence, which is useful for the model to be aware of the absolute position of a token.
 
 The authors also experimented with the learned positional embeddings, which were trained in the same manner as word embeddings. It was reported that the two methods yielded comparable results.
 
@@ -168,12 +170,12 @@ All the features that we have discussed so far are used to construct the \transf
 \begin{figure}[t]
     \centering
     \includegraphics[width=0.9\linewidth]{img/transformer.png}
-    \caption{The \transformer model (adapted from \cite{DBLP:conf/nips/VaswaniSPUJGKP17})}
+    \caption{The \transformer model (reproduced from \cite{DBLP:conf/nips/VaswaniSPUJGKP17})}
     \label{fig:transformer}
 \end{figure}
 
 The model takes the input token embeddings.
-After being combined with the corresponding positional encoding, they are passed through the encoder, which is a stack of $N$ multi-head attention layers with projection (``feed forward") layer on top of each.
+After being combined with the corresponding positional encoding, they are passed through the encoder, which is a stack of $N$ multi-head attention layers with a projection (``feed forward") layer on top of each.
 A similar process is used in the decoder.
 However, this time the multi-head attention is masked to avoid the attention layer looking into the future, i.e. it should only attend to the tokens translated up to that point.
 In addition, between this masked multi-head attention and the projection layer, there is another multi-head attention layer. 

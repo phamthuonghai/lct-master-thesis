@@ -24,7 +24,7 @@ For each unit of the source sentence, there are several possible translations as
 % Stress that linguistics *is* usually used when deciding what are the units
 The goal of the SMT system is to select these translations for each source unit such that they cover the source sentence with the highest translation probability.
 The statistical model helps this selection process, parameters of which must be derived from a sufficient amount of data.
-The data in this case is called the \textit{bilingual corpus}, a set of pairs, each consisting of a sentence from the source language and the corresponding sentence in the target language.
+The data in this case is comprised of a \textit{bilingual corpus} (or \textit{parallel corpus}), a set of pairs, each consisting of a sentence from the source language and the corresponding sentence in the target language.
 
 From the mid 2010s, the field of MT has seen a new group of systems emerge and then outperform the two previously mentioned types to establish the new state of the art.
 These MT systems are actually not too different from SMT as they are also statistical learning models.
@@ -34,7 +34,7 @@ Hence, this type is referred to with a distinct name, \textit{neural machine tra
 \subsection{Neural Machine Translation}
 \label{the-mt-nmt}
 As mentioned above, a \textit{neural machine translation} system uses a deep neural network to learn the statistical model for machine translation.
-Unlike the statistical MT, where all types (word-based, phrase-based or syntax-based) consist of several sub-components that need to be trained separately, NMT can be built and trained in a single neural network.
+Unlike the traditional statistical MT, where all types (word-based, phrase-based or syntax-based) consist of several sub-components that need to be trained separately, NMT can be built and trained in a single neural network.
 Such a system is referred to as end-to-end, in which the model is trained at once, directly mapping an input source sentence to its associated sentence in the target language.
 
 The use of neural networks in MT dates back to the works of \cite{Castano97machinetranslation} and \cite{neco1997asynchronous}.
@@ -44,7 +44,7 @@ Therefore, \seq2seq consists of two main components: an \textit{encoder} and a \
 The encoder consumes the source sentence and produces a fixed-length vector encoding the ``meaning" of the sentence.
 This vector is then fed to the decoder.
 Finally, the decoder produces the target sentence in the target language token-by-token, based on the context vector and the previously translated tokens. 
-In the \seq2seq model, the encoder and decoder are both modelled by a recurrent neural network, or its variant, \textit{long-short term memory} (LSTM) \citep{Hochreiter95longshort-term}.
+In the \seq2seq model, the encoder and decoder are both modelled by a \textit{recurrent neural network} (RNN), or its variant, \textit{long-short term memory} (LSTM) \citep{Hochreiter95longshort-term}.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{img/seq2seq.pdf}
@@ -57,9 +57,9 @@ In the \seq2seq model, the encoder and decoder are both modelled by a recurrent 
 The assumption that human translators keep in mind the meaning of the entire source sentence is arguable.
 Some might argue that the translator has to look back to some part of the source sentence during the translation process.
 
-We are yet to know which is the correct way our brain works during the translation process.
+We are yet to discover which is the precise way our brain works during the translation process.
 However, from the technical point of view, the limitation of the encoder-decoder approach is that the encoder has to output a fixed-length vector from the source sentence, which is then used in the decoder to output the target sentence.
-This means that every decoded token $w$ is condition from the same vector, which captures the whole source sentence, instead of from some parts, e.g. clauses, phrases, etc., of the source sentence which are most associated with $w$.
+This means that every decoded token $w$ is conditioned on the same vector, which captures the whole source sentence, instead of on some parts, e.g. clauses, phrases, etc., of the source sentence which are most associated with $w$.
 % This means that all decoded words are based on the same context vector, sentence level instead of the part that gives the most information (clause, phrase, etc.).
 In addition, compressing all information into a fixed-length vector leads to the loss of information when the sentence becomes longer.
 This is where the attention mechanism is able to help \seq2seq.
@@ -86,7 +86,7 @@ This is where the attention mechanism is able to help \seq2seq.
 
 The function $att$ is simply a dot product between two vectors. The second step is the \textit{sigmoid function}, ensuring that $\sum_{t}a_{i,t} = 1$, i.e. a distribution. 
 
-This attention mechanism brings a significant improvement to the \seq2seq model.
+This attention mechanism brings a significant improvement to the \seq2seq model \citep{bahdanau:etal:attention:iclr:2015}.
 In some examples, the attention weight matrix is visually similar to the alignment matrix from SMT.
 Hence, the attention was also considered as soft-alignment because it does not need to strictly match tokens between the two sentences.
 
@@ -98,7 +98,7 @@ Due to the considerations of space, we will not elaborate on the local attention
 \section{Evaluation}
 \label{the-eval}
 
-In this section, we discuss several methods to evaluate MT systems, which are divided into two types: manual evaluation methods and automatic metrics.
+In this section, we discuss several methods to evaluate MT systems, which are divided into two types: manual methods and automatic metrics.
 
 \subsection{Manual Evaluation}
 \label{the-eval-manual}
@@ -108,10 +108,11 @@ Most of the methods simply judge the hypotheses produced by MT systems, treating
 
 A very straightforward evaluation is to directly assess the adequacy and fluency of whole sentences \citep{DBLP:conf/acllaw/GrahamBMZ13}.
 By adequacy, the annotator is expressing to what extent MT captures the meaning of the reference sentence.
-Fluency, on the other hand assesses the grammatical correctness and overall quality of the target sentence regardless the source.
-In Graham, fluency is merely used to break ties in adequacy.
+Fluency, on the other hand assesses the grammatical correctness and overall quality of the target sentence regardless of the source.
+In \citet{DBLP:conf/acllaw/GrahamBMZ13}, fluency is merely used to break ties in adequacy.
 Another option is to rank full sentences or constituents, i.e. parts of sentences, from several MT systems.
 Yet \cite{DBLP:conf/wmt/BojarEPZ11} showed that it is problematic to interpret this manual ranking.
+Their examples suggested that the ranking of individual sentences could not be reasonably accumulated to a final ranking of the whole corpus.
 
 % Comprehension test: Blind editing+correctness check.
 
@@ -159,7 +160,7 @@ However, this simple definition of precision would not be very precise in some c
 
 The straightforward (lowercase) unigram precision of the above example is 1.0 (100\%), even though only two \textit{that} unigrams in the candidate are matched with the two unigrams in the reference.
 That is to say, the number of n-grams shared between the candidate and the reference should be clipped to the number of n-grams that appear in the reference. 
-Having that modification, the \textit{modified n-gram precision} in BLEU is computed as follows:
+After that modification, the \textit{modified n-gram precision} in BLEU is computed as follows:
 
 \begin{equation}
     p_n=\frac{\sum_{C\in\{Candidates\}}\sum_{n-gram\in C}Count_{clip}(n-gram)}{\sum_{C'\in\{Candidates\}}\sum_{n-gram'\in C'}Count(n-gram')}
@@ -319,10 +320,10 @@ For example, the Universal Dependencies 2.0 (UD 2.0, \cite{UD20}) has a differen
 \textit{Dependency parsing} is a syntactic analysis of lexical items focused on finding the dependency relation between tokens in a sentence.
 In other words, dependency parsing is the process that takes a sentence as the input and outputs the dependency tree discussed in the previous section.
 The dependency parser can be built using a set of predefined rules or by learning from data.
-The dataset that a parser learns from is called a \textit{treebank}.
+The dataset annotated with dependency trees that a supervised parser learns from is called a \textit{treebank}.
 Data-driven dependency parsing has two prominent approaches: \textit{transition-based} or \textit{graph-based parsing}.
 
-The transition-based parsing maintains a so-called \textit{configuration}. Then, it uses an \textit{oracle} to decide an action, e.g. whether to attach a token to another token, or to change the current configuration. A configuration in a stack-based shift-reduce parser includes:
+Transition-based parsing maintains a so-called \textit{configuration}. Then, it uses an \textit{oracle} to decide an action, e.g. whether to attach a token to another token, or to change the current configuration. A configuration in a stack-based shift-reduce parser includes:
 
 \begin{itemize}
     \item A \textit{buffer} containing tokens from the input sentence which have yet to be processed.
@@ -350,7 +351,20 @@ The task of assigning a dependency label to each dependency relation (\textit{de
 By definition, a \textit{part of speech (POS)} is a category of words that have similar grammatical properties.
 If two words are assigned the same POS tag, they have similar grammatical functions in the structure of sentences.
 
-It is important to note that the set of POS tags varies among languages. For example, Vietnamese has the tag of nominal classifiers, which English does not. For English, the POS tags from the Penn treebank project \citep{Marcus93buildinga} are commonly used (\cref{tab:penn-pos}).
+It is important to note that the set of POS tags varies among languages. For example, Vietnamese has the tag of classifiers, which English does not \citep{le2010empirical}.
+
+\bigskip
+
+\begin{tabular}{l  l}
+
+    Vietnamese: & hai con gà \\
+    English gloss: & two [classifier for animals] chicken \\
+    English translation: & two chicken \\
+\end{tabular}
+
+\bigskip
+
+For English, the POS tags from the Penn treebank project \citep{Marcus93buildinga} are commonly used (\cref{tab:penn-pos}).
 
 \begin{table}[t]
 \small

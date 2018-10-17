@@ -2,15 +2,19 @@
 \label{enriching}
 
 In this chapter, we present our proposals to enrich the encoder.
-In contrast to \citeauthor{sennrich2016linguistic}, we do not simply feed the network with more information, e.g. POS tags or dependency labels, but directly instruct the self-attention mechanism to build upon these types of information. \cref{enriching-structure} discusses the first approach which introduces dependency-related attentional biases to the \transformer. In \cref{enriching-specialized}, we propose a novel specialized attention head guided by syntactic information.
+In contrast to \citeauthor{sennrich2016linguistic}, we do not simply feed the network with more information, e.g. POS tags or dependency labels, but directly instruct the self-attention mechanism to build upon these types of information.
+With this approach, we aim to make the model aware of the source sentence structure and make sure that this happens at the attention layer, the most appropriate layer to deal with relations between tokens.
+
+\cref{enriching-structure} discusses the first approach which introduces dependency-related attentional biases to the \transformer. 
+In \cref{enriching-specialized}, we propose a novel specialized attention head guided by syntactic information.
 
 \section{Structured Attentional Bias}
 \label{enriching-structure}
 
 With this approach, we make the \transformer model aware of the source sentence structure by introducing bias terms which are similar to the relative position, but based on the dependency tree.
 
-\subsection{Relative Position}
-\label{enriching-structure-relative}
+% \subsection{Relative Position}
+% \label{enriching-structure-relative}
 
 Let us recall the formula to compute the attention energy $e_{ij}$ (before the softmax layer to get attention weight $a_{ij}$):
 
@@ -96,7 +100,7 @@ To be able to learn the embeddings, the model has to limit the maximum distance 
 \label{enriching-structure-treetraversal}
 
 We also expand the simple numerical tree distance above into the tree traversal encoding.
-This encoding does not only describe the distance but the path from one node to another.
+This encoding does not only describe the distance but also the path from one node to another.
 Our model \TreeTraversal makes use of this encoding the same way the \TreeDistance model utilizes the tree distance label.
 
 \cref{fig:tree-traversal-encoding} elaborates our idea in a more intuitive way.

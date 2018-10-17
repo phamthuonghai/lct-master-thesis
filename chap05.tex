@@ -183,6 +183,9 @@ From now on, we refer this to be one of the baseline model, named \transformerba
 Batch size was the only hyperparameter that was set differently from the default \textit{transformer\_base}. 
 The reason was we needed to fit all of our models to a single \textit{GPU (graphical processing unit)} NVIDIA GTX 1080 Ti, which could not be done with the batch size of 4096. It is crucial for all experiments to have exactly the same batch size when training for comparable results.
 
+It was reported that choosing a stopping criterion for NMT models is tricky \citep{TrainingTipsfortheTransformerModel} depending on many aspects.
+We opted to stop training our models after 500,000 steps, at which the \transformerbase was observed to show the sign of convergence.
+
 Each variant of the \transformer model also has its own specific hyperparameters that we experimented with, namely:
 
 \begin{itemize}
